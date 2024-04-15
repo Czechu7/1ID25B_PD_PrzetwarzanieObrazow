@@ -1,0 +1,35 @@
+# Pliki tymczasowe
+*.pyc
+__pycache__
+
+# Katalogi środowiska wirtualnego (np. virtualenv, venv, env)
+venv/
+env/
+*.env/
+
+# Katalogi generowane przez IDE/editor (np. Visual Studio Code, PyCharm)
+.vscode/
+.idea/
+
+# Pliki konfiguracyjne dla różnych narzędzi (np. .vscode/, .idea/)
+# Upewnij się, że nie usuwasz ważnych konfiguracji, jeśli używasz takich narzędzi
+
+# Pliki związane z cache'em lub tymczasowe pliki
+.cache/
+*.log
+
+# Pliki środowiska (np. .env, .env.local, .env.*.local)
+.env*
+
+# Pliki generowane przez narzędzia testowe
+nosetests.xml
+coverage.xml
+
+# Katalogi z plikami wygenerowanymi przez twoją aplikację
+/static/
+/dist/
+/build/
+
+# Inne tymczasowe pliki
+*.swp
+*.swo
