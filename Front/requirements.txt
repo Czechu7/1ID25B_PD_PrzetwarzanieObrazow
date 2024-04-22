@@ -1,1 +1,2 @@
-#Dodawanie bibliotek wymaganych
+PyQt5
+pyjwt
