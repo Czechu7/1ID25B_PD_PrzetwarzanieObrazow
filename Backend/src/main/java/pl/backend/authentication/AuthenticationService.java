@@ -1,5 +1,7 @@
 package pl.backend.authentication;
 
+
+import pl.backend.exception.UserAlreadyExistsException;
 import pl.backend.jwt.JWTUtil;
 import pl.backend.user.*;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +46,12 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse signup(SignUpRequest signUpRequest) {
+
+
+        boolean existingUser = userService.getUserByName(signUpRequest.name());
+        if (!existingUser) {
+            throw new UserAlreadyExistsException("User with name [%s] already exists".formatted(signUpRequest.name()));
+        }
 
         System.out.println(signUpRequest.name());
         User user = new User(signUpRequest.name(), signUpRequest.password(), UserRole.ROLE_USER);

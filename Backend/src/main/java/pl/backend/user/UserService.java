@@ -40,9 +40,8 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new ResourceNotFoundException("User with email [%s] not found".formatted(name)));
     }
 
-    public User getUserByName(String name){
-        return userRepository.findByName(name)
-                .orElseThrow(() -> new ResourceNotFoundException("User with email [%s] not found".formatted(name)));
+    public boolean getUserByName(String name){
+        return userRepository.findByName(name).isEmpty();
     }
 
     public void deleteUser(Long id) {
