@@ -1,2 +1,6 @@
-package pl.backend.user;public class UserRole {
+package pl.backend.user;
+
+public enum UserRole {
+    ROLE_USER,
+    ROLE_ADMIN
 }

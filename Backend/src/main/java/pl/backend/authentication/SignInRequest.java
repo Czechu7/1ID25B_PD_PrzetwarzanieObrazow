@@ -1,2 +1,4 @@
-package pl.backend.authentication;public class SignInRequest {
+package pl.backend.authentication;
+
+public record SignInRequest(String name, String password) {
 }
