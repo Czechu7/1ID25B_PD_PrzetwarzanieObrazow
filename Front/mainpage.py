@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QMainWindow, QAction, QLabel, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import QMainWindow, QAction, QLabel, QPushButton, QMessageBox, QVBoxLayout, QWidget
 from PyQt5.QtCore import Qt
 import imports
 
@@ -29,7 +29,28 @@ class MainMenu(QMainWindow):
         layout = QVBoxLayout()
         layout.addWidget(welcome_label)
 
+        login_button = QPushButton("Zaloguj się")
+        register_button = QPushButton("Zarejestruj się")
+        login_button.clicked.connect(self.openLogin)
+        register_button.clicked.connect(self.openRegister)
+        layout.addWidget(login_button)
+        layout.addWidget(register_button)
+        # login_button.clicked.connect()
+
         # Tworzymy widget i ustawiamy layout
         central_widget = QWidget(self)
         central_widget.setLayout(layout)
         self.setCentralWidget(central_widget)
+
+    def openLogin(self):
+        # self.close()  # Zamknij obecne okno
+        login_window = imports.SignInWindow()  # Utwórz nowe okno logowania
+        login_window.userAuth.connect(self.onUserLogged)
+        login_window.exec_()  # Pokaż nowe okno
+
+    def onUserLogged(self, user):
+        QMessageBox.warning(self, 'Zalogowano', 'zalogowano ' + user.getName())
+
+    def openRegister(self):
+        register_window = imports.SignUpWindow()
+        register_window.exec_()
