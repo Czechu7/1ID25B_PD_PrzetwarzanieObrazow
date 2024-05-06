@@ -10,7 +10,7 @@ class MainMenu(QMainWindow):
         super().__init__()
 
         self.setWindowTitle("Menu Główne")
-        self.setGeometry(100, 100, 800, 800)
+        self.setGeometry(100, 100, 900, 900)
 
         self.initUI()
 
@@ -35,12 +35,12 @@ class MainMenu(QMainWindow):
 
         
         # Tworzymy powitanie
-        welcome_label = QLabel("Witaj! Zanim zaczniemy, Zaloguj się!.", self)
-        welcome_label.setAlignment(Qt.AlignCenter)
+        self.welcome_label = QLabel("Witaj! Zanim zaczniemy, Zaloguj się!.", self)
+        self.welcome_label.setAlignment(Qt.AlignCenter)
 
         # Ustawiamy layout dla okna
         layout = QVBoxLayout()
-        layout.addWidget(welcome_label)
+        layout.addWidget(self.welcome_label)
 
         # Tworzymy widget i ustawiamy layout
         central_widget = QWidget(self)
@@ -107,6 +107,7 @@ class MainMenu(QMainWindow):
         self.button_page1.show()
         self.button_page2.show()
         self.button_page3.show()
+        self.welcome_label.hide()
         
         
 
@@ -123,3 +124,4 @@ class MainMenu(QMainWindow):
         self.button_page1.hide()
         self.button_page2.hide()
         self.button_page3.hide()
+        self.welcome_label.show()
