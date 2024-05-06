@@ -17,7 +17,6 @@ class MainMenu(QMainWindow):
     def initUI(self):
         # Tworzymy akcję dla menu
         action_exit = QAction("Wyjdź", self)
-        #action_switch = QPushButton("Strona 1", self)
         action_exit.triggered.connect(self.close)
 
         # Tworzymy pasek menu
@@ -27,13 +26,18 @@ class MainMenu(QMainWindow):
         imports.helloworld.hello_world()
         
         # Tworzymy powitanie
-        welcome_label = QLabel("Witaj! To jest menu główne.", self)
+        welcome_label = QLabel("Witaj! Zanim zaczniemy, Zaloguj się!.", self)
         welcome_label.setAlignment(Qt.AlignCenter)
 
         # Ustawiamy layout dla okna
         layout = QVBoxLayout()
         layout.addWidget(welcome_label)
-        
+
+        # Tworzymy widget i ustawiamy layout
+        central_widget = QWidget(self)
+        central_widget.setLayout(layout)
+        self.setCentralWidget(central_widget)
+
         # Tworzymy widget dla QStackedWidget
         self.stacked_widget = QStackedWidget()
         
@@ -41,6 +45,7 @@ class MainMenu(QMainWindow):
         # Dodajemy poszczególne strony do QStackedWidget
         self.page1 = Page1()
         self.stacked_widget.addWidget(self.page1)
+        
 
         self.page2 = Page2()
         self.stacked_widget.addWidget(self.page2)
@@ -52,36 +57,32 @@ class MainMenu(QMainWindow):
         self.stacked_widget.setCurrentWidget(self.page1)
 
         layout.addWidget(self.stacked_widget)
+        self.stacked_widget.hide()  # Ustawienie przycisku jako niewidocznego
 
-        # Tworzymy przyciski dla stron
-        button_page1 = QPushButton("Page 1")
-        button_page1.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.page1))
-        layout.addWidget(button_page1)
+ # Tworzymy przyciski dla stron po zalogowaniu
+        self.button_page1 = QPushButton("Moje pliki")
+        self.button_page1.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.page1))
+        layout.addWidget(self.button_page1)
+        self.button_page1.hide()  # Ukrywamy przycisk
 
-        button_page2 = QPushButton("Page 2")
-        button_page2.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.page2))
-        layout.addWidget(button_page2)
+        self.button_page2 = QPushButton("Dodaj plik")
+        self.button_page2.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.page2))
+        layout.addWidget(self.button_page2)
+        self.button_page2.hide()  # Ukrywamy przycisk
 
-        button_page3 = QPushButton("Page 3")
-        button_page3.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.page3))
-        layout.addWidget(button_page3)
+        self.button_page3 = QPushButton("Page 3")
+        self.button_page3.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.page3))
+        layout.addWidget(self.button_page3)
+        self.button_page3.hide()  # Ukrywamy przycisk
+        
 
-        # Tworzymy widget i ustawiamy layout
-        central_widget = QWidget(self)
-        central_widget.setLayout(layout)
-        self.setCentralWidget(central_widget)
+        self.login_button = QPushButton("Zaloguj się")  # Przypisanie do atrybutu
+        self.register_button = QPushButton("Zarejestruj się")  # Przypisanie do atrybutu
+        self.login_button.clicked.connect(self.openLogin)
+        self.register_button.clicked.connect(self.openRegister)
+        layout.addWidget(self.login_button)
+        layout.addWidget(self.register_button)
 
-        login_button = QPushButton("Zaloguj się")
-        register_button = QPushButton("Zarejestruj się")
-        login_button.clicked.connect(self.openLogin)
-        register_button.clicked.connect(self.openRegister)
-        layout.addWidget(login_button)
-        layout.addWidget(register_button)
-
-        # Tworzymy widget i ustawiamy layout
-        central_widget = QWidget(self)
-        central_widget.setLayout(layout)
-        self.setCentralWidget(central_widget)
 
     def openLogin(self):
         # self.close()  # Zamknij obecne okno
@@ -91,7 +92,14 @@ class MainMenu(QMainWindow):
 
     def onUserLogged(self, user):
         QMessageBox.warning(self, 'Zalogowano', 'zalogowano ' + user.getName())
+        self.login_button.hide()  # Ukrycie przycisku logowania
+        self.register_button.hide()  # Ukrycie przycisku rejestracji
+        self.stacked_widget.show()  # Ustawienie przycisku jako niewidocznego
+        self.button_page1.show()
+        self.button_page2.show()
+        self.button_page3.show()
 
     def openRegister(self):
         register_window = imports.SignUpWindow()
         register_window.exec_()
+
