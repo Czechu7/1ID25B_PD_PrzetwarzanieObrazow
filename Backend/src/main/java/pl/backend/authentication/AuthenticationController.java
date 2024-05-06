@@ -19,6 +19,9 @@ public class AuthenticationController {
     @PostMapping("/sign-in")
     public ResponseEntity<AuthenticationResponse> signin(@RequestBody SignInRequest signInRequest) {
         System.out.println(signInRequest.name());
+        if (signInRequest.name().isEmpty() || signInRequest.password().isEmpty()) {
+            throw new IllegalArgumentException("Username and password must not be empty");
+        }
         AuthenticationResponse token = authenticationService.signin(signInRequest);
         return new ResponseEntity<>(token, HttpStatus.OK);
     }
@@ -26,6 +29,9 @@ public class AuthenticationController {
     public ResponseEntity<AuthenticationResponse> signup(@RequestBody SignUpRequest signUpRequest) {
         System.out.println(signUpRequest.name());
         System.out.println("name: "+signUpRequest.name());
+        if (signUpRequest.name().isEmpty() || signUpRequest.password().isEmpty()) {
+            throw new IllegalArgumentException("Username and password must not be empty");
+        }
         AuthenticationResponse token = authenticationService.signup(signUpRequest);
         return new ResponseEntity<>(token, HttpStatus.CREATED);
     }
