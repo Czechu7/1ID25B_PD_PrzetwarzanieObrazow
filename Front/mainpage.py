@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QMainWindow, QAction, QLabel, QPushButton, QMessageBox, QVBoxLayout, QWidget, QStackedWidget
 from PyQt5.QtCore import Qt
-import imports
+import imports as imports
 from views.page1 import Page1
 from views.page2 import Page2
 from views.page3 import Page3
@@ -118,6 +118,7 @@ class MainMenu(QMainWindow):
 
     def onLogout(self):
         QMessageBox.information(self, "Wylogowano", "Zostałeś pomyślnie wylogowany.")
+        imports.authService.logout()
         self.login_button.show()  # Ukrycie przycisku logowania
         self.register_button.show()  # Ukrycie przycisku rejestracji
         self.stacked_widget.hide()  # Ustawienie przycisku jako niewidocznego
