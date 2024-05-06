@@ -10,7 +10,7 @@ class MainMenu(QMainWindow):
         super().__init__()
 
         self.setWindowTitle("Menu Główne")
-        self.setGeometry(100, 100, 400, 200)
+        self.setGeometry(100, 100, 800, 800)
 
         self.initUI()
 
@@ -18,12 +18,21 @@ class MainMenu(QMainWindow):
         # Tworzymy akcję dla menu
         action_exit = QAction("Wyjdź", self)
         action_exit.triggered.connect(self.close)
-
+               
         # Tworzymy pasek menu
         menubar = self.menuBar()
         file_menu = menubar.addMenu("Plik")
+        Wylogowanie = menubar.addMenu("Wyloguj")
+        Wylogowanie.hide()  # Ukrywamy element menu "Wyloguj"
         file_menu.addAction(action_exit)
         imports.helloworld.hello_world()
+
+        # Dodajemy akcję do elementu menu "Wyloguj"
+        action_logout = QAction("Wyloguj", self)
+        action_logout.triggered.connect(self.onLogout)
+        Wylogowanie.addAction(action_logout)
+
+
         
         # Tworzymy powitanie
         welcome_label = QLabel("Witaj! Zanim zaczniemy, Zaloguj się!.", self)
@@ -59,18 +68,18 @@ class MainMenu(QMainWindow):
         layout.addWidget(self.stacked_widget)
         self.stacked_widget.hide()  # Ustawienie przycisku jako niewidocznego
 
- # Tworzymy przyciski dla stron po zalogowaniu
-        self.button_page1 = QPushButton("Moje pliki")
+ # Tworzymy przyciski dla stron po zalogowaniu i ukrywamy je domyslnie
+        self.button_page1 = QPushButton("Moje zdjecia")
         self.button_page1.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.page1))
         layout.addWidget(self.button_page1)
         self.button_page1.hide()  # Ukrywamy przycisk
 
-        self.button_page2 = QPushButton("Dodaj plik")
+        self.button_page2 = QPushButton("Dodaj zdjecie")
         self.button_page2.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.page2))
         layout.addWidget(self.button_page2)
         self.button_page2.hide()  # Ukrywamy przycisk
 
-        self.button_page3 = QPushButton("Page 3")
+        self.button_page3 = QPushButton("beczka z")
         self.button_page3.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.page3))
         layout.addWidget(self.button_page3)
         self.button_page3.hide()  # Ukrywamy przycisk
@@ -98,8 +107,19 @@ class MainMenu(QMainWindow):
         self.button_page1.show()
         self.button_page2.show()
         self.button_page3.show()
+        
+        
 
     def openRegister(self):
         register_window = imports.SignUpWindow()
         register_window.exec_()
 
+
+    def onLogout(self):
+        QMessageBox.information(self, "Wylogowano", "Zostałeś pomyślnie wylogowany.")
+        self.login_button.show()  # Ukrycie przycisku logowania
+        self.register_button.show()  # Ukrycie przycisku rejestracji
+        self.stacked_widget.hide()  # Ustawienie przycisku jako niewidocznego
+        self.button_page1.hide()
+        self.button_page2.hide()
+        self.button_page3.hide()
