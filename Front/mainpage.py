@@ -54,4 +54,5 @@ class MainMenu(QMainWindow):
         
     def openRegister(self):
         register_window = imports.SignUpWindow()
+        register_window.userAuth.connect(self.onUserLogged)  # Połącz z sygnałem userAuth z okna rejestracji
         register_window.exec_()
