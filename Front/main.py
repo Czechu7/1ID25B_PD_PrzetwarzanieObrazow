@@ -5,8 +5,10 @@ import time
 
 def main():
     print("Sprawdzanie czy użytkownik jest zalogowany.")
-    logged_user_info = imports.authService.getLoggedUserInfo()
-    if logged_user_info:
+    isUserLogged = imports.authService.isUserLogged()
+    
+    if isUserLogged:
+        logged_user_info = imports.authService.getLoggedUserInfo()
         print("Zalogowany użytkownik:")
         print(f"Rola: {logged_user_info['role']}")
         print(f"Nazwa użytkownika: {logged_user_info['user_name']}")
@@ -15,10 +17,12 @@ def main():
     else:
         print("Brak zalogowanego użytkownika.")
 
-
     print("Uruchomiono główny moduł.")
     app = QApplication(sys.argv)
-    window = imports.MainMenu()
+    if isUserLogged:
+        window = imports.UserDashboard()  # Przekazanie informacji o użytkowniku do MainMenu
+    else:
+        window = imports.MainMenu()
     window.show()
     sys.exit(app.exec_())
 
