@@ -8,10 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.security.Key;
 import java.time.Instant;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class JWTUtil {
@@ -30,6 +27,13 @@ public class JWTUtil {
 
     public String issueToken(String subject, List<String> scopes) {
         return issueToken(subject, Map.of("scopes", scopes));
+    }
+    public String issueToken(String subject, List<String> scopes, String userId) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("scopes", scopes);
+        claims.put("id", userId);
+
+        return issueToken(subject, claims);
     }
 
     public Long getExpirationDate(String token) {
@@ -54,6 +58,11 @@ public class JWTUtil {
 
     public String getSubject(String token) {
         return getClaims(token).getSubject();
+    }
+
+    public String getId(String token) {
+        Claims claims = getClaims(token);
+        return claims.get("id", String.class);
     }
 
     private Claims getClaims(String token) {

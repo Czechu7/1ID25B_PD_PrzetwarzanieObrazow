@@ -1,6 +1,8 @@
 package pl.backend.authentication;
 
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import pl.backend.exception.UserAlreadyExistsException;
 import pl.backend.jwt.JWTUtil;
 import pl.backend.user.*;
@@ -41,7 +43,9 @@ public class AuthenticationService {
                 principal.getAuthorities()
                         .stream()
                         .map(GrantedAuthority::getAuthority)
-                        .collect(Collectors.toList()));
+                        .collect(Collectors.toList()),
+                principal.getId().toString()
+        );
         return new AuthenticationResponse(token, userDTO);
     }
 
@@ -63,7 +67,8 @@ public class AuthenticationService {
         String token = jwtUtil.issueToken( user.getName(), user.getAuthorities()
                 .stream()
                 .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList()));
+                .collect(Collectors.toList())
+        );
 
         return new AuthenticationResponse(token, userDTO);
     }
