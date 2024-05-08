@@ -1,0 +1,2 @@
+# 1ID25B_PD_PrzetwarzanieObrazow
+Projekt Politechnika Świętokrzyska Programowanie Defensywne grupa 1ID25B
