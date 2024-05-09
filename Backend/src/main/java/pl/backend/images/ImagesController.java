@@ -30,6 +30,10 @@ public class ImagesController {
         this.authenticationService = authenticationService;
     }
 
+    public void setTargetFolder(String targetFolder) {
+        this.TARGET_FOLDER = targetFolder;
+    }
+
 @PostMapping("/upload")
 public ResponseEntity<String> uploadImage(@RequestParam("image") MultipartFile file, @RequestHeader("Authorization") String token) {
     if (file.isEmpty()) {

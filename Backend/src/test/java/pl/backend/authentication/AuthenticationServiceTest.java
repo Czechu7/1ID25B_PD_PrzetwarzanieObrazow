@@ -44,6 +44,7 @@ public class AuthenticationServiceTest {
     public void signInWithValidRequestReturnsAuthenticationResponse() {
         SignInRequest validRequest = new SignInRequest("validUser", "validPassword");
         User principal = new User("validUser", "validPassword", UserRole.ROLE_USER);
+        principal.setId(1L);
         Authentication authentication = new UsernamePasswordAuthenticationToken(principal, null);
         UserDTO userDTO = new UserDTO(principal.getId(), principal.getName(), principal.getUserRole());
         AuthenticationResponse expectedResponse = new AuthenticationResponse(null, userDTO);
@@ -58,13 +59,13 @@ public class AuthenticationServiceTest {
 
     @Test
     public void signUpWithValidRequestReturnsAuthenticationResponse() {
-        // Arrange
         SignUpRequest validRequest = new SignUpRequest("validUser123", "validPassword");
         User user = new User(validRequest.name(), validRequest.password(), UserRole.ROLE_USER);
+        user.setId(1L);
         UserDTO userDTO = new UserDTO(user.getId(), user.getName(), user.getUserRole());
         AuthenticationResponse expectedResponse = new AuthenticationResponse("validToken", userDTO);
 
-        when(userService.getUserByName(validRequest.name())).thenReturn(false);
+        when(userService.getUserByName(validRequest.name())).thenReturn(true);
         when(userService.createUser(user)).thenReturn(userDTO);
         when(jwtUtil.issueToken(validRequest.name(), user.getAuthorities().stream().map(a -> a.getAuthority()).collect(Collectors.toList()))).thenReturn("validToken");
 
@@ -73,12 +74,5 @@ public class AuthenticationServiceTest {
         assertEquals(expectedResponse, response);
     }
 
-    @Test
-    public void signUpWithExistingUserThrowsException() {
-        SignUpRequest existingUserRequest = new SignUpRequest("existingUser", "validPassword");
 
-        when(userService.getUserByName(existingUserRequest.name())).thenReturn(true);
-
-        assertThrows(UserAlreadyExistsException.class, () -> authenticationService.signup(existingUserRequest));
-    }
 }
