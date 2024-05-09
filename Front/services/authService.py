@@ -13,8 +13,8 @@ def signUp(name, password):
     res = requests.post(API_URL + '/sign-up', json=body)
     if(res.status_code == 201): # 201 Created
         resJson = res.json()
-        tokenDecrypt = jwt.decode(resJson['token'], algorithms="HS256", options={"verify_signature": False})
-        user = User(resJson['user']['id'], resJson['user']['name'], resJson['user']['role'], resJson['token'], tokenDecrypt['iat'], tokenDecrypt['exp'])
+        tokenDecrypted = jwt.decode(resJson['token'], algorithms="HS256", options={"verify_signature": False})
+        user = User(resJson['user']['id'], resJson['user']['name'], resJson['user']['role'], resJson['token'], tokenDecrypted['iat'], tokenDecrypted['exp'])
         with open(TOKEN_FILE, 'w') as plik:
             plik.write(user.token)
         return user; #Obiekt użytkownika User
@@ -29,8 +29,8 @@ def signIn(name, password):
     if(res.status_code == 200): # 200 Successful
         resJson = res.json()
         token = resJson['token']
-        tokenDecrypt = decodeToken(token)
-        user = User(resJson['user']['id'], resJson['user']['name'], resJson['user']['role'], resJson['token'], tokenDecrypt['iat'], tokenDecrypt['exp'])     
+        tokenDecrypted = decodeToken(token)
+        user = User(resJson['user']['id'], resJson['user']['name'], resJson['user']['role'], resJson['token'], tokenDecrypted['iat'], tokenDecrypted['exp'])     
         with open(TOKEN_FILE, 'w') as plik:
             plik.write(user.token)
         return user; #Obiekt użytkownika User
@@ -44,8 +44,8 @@ def isUserLogged():
         print('Token nie istnieje.')
         return None
     try:
-        tokenDecrypt = decodeToken(token)
-        if tokenDecrypt['exp'] > time.time():
+        tokenDecrypted = decodeToken(token)
+        if tokenDecrypted['exp'] > time.time():
             return True
         else:
             print('Token wygasł.')
@@ -69,13 +69,13 @@ def getLoggedUserInfo():
         print('Token nie istnieje.')
         return None
     try:
-        tokenDecrypt = decodeToken(token)
+        tokenDecrypted = decodeToken(token)
         user_info = {
-            'role': tokenDecrypt.get('scopes'),
-            'user_name': tokenDecrypt.get('sub'),
-            'iat': tokenDecrypt.get('iat'),
+            'role': tokenDecrypted.get('scopes'),
+            'user_name': tokenDecrypted.get('sub'),
+            'iat': tokenDecrypted.get('iat'),
             'token': token,
-            'expiration_time': tokenDecrypt.get('exp')
+            'expiration_time': tokenDecrypted.get('exp')
         }
         return user_info
     except jwt.InvalidTokenError:
