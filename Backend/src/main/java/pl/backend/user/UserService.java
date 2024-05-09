@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import pl.backend.exception.ResourceNotFoundException;
@@ -23,14 +22,16 @@ public class UserService implements UserDetailsService {
         return userRepository.findAll().stream().map(UserMapper::mapToUserDTO).toList();
     }
 
-    public UserDTO updateUser(Long id, UserDTO user) {
-        User userToUpdate = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User with id [%s] found".formatted(id)));
+    public UserDTO updateUser(Long id, UserDTO userDTO) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User with id [%s] not found".formatted(id)));
 
-        if(user.role() != null) {
-            userToUpdate.setUserRole(user.role());
-        }
-        return UserMapper.mapToUserDTO(userRepository.save(userToUpdate));
+        user.setName(userDTO.name());
+        user.setUserRole(userDTO.role());
+
+        User updatedUser = userRepository.save(user);
+
+        return UserMapper.mapToUserDTO(updatedUser);
     }
 
 
@@ -40,9 +41,8 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new ResourceNotFoundException("User with email [%s] not found".formatted(name)));
     }
 
-    public User getUserByName(String name){
-        return userRepository.findByName(name)
-                .orElseThrow(() -> new ResourceNotFoundException("User with email [%s] not found".formatted(name)));
+    public boolean getUserByName(String name){
+        return userRepository.findByName(name).isEmpty();
     }
 
     public void deleteUser(Long id) {
