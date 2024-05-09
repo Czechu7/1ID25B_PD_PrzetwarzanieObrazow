@@ -12,3 +12,5 @@ from views.signUpWindow import SignUpWindow
 from views.page1 import Page1
 from views.page2 import Page2
 from views.page3 import Page3
+from views.userDashboard import UserDashboard
+from main import main
