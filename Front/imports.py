@@ -1,6 +1,5 @@
 #Do externalModules wszystkie importy z pipa
 
-
 #Ponizej import modulow
 import helloworld
 
@@ -14,3 +13,4 @@ from views.page2 import Page2
 from views.page3 import Page3
 from views.userDashboard import UserDashboard
 from main import main
+from services.imagesService import choose_and_send_photo
