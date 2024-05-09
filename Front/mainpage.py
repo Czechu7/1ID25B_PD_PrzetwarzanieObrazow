@@ -1,11 +1,10 @@
 import sys
 from PyQt5.QtWidgets import (QMainWindow, QAction, QLabel, QPushButton, QMessageBox, QVBoxLayout,
-                             QWidget, QStackedWidget, QFileDialog)
+                             QWidget, QStackedWidget, QFileDialog, QFrame, QApplication)
 from PyQt5.QtCore import QThread, pyqtSignal, Qt
 import requests
 import imports
 from services.authService import getLoggedUserInfo  
-
 class FileUploader(QThread):
     finished = pyqtSignal(int, str)
 
@@ -30,7 +29,7 @@ class MainMenu(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Menu Główne")
-        self.setGeometry(100, 100, 800, 600)
+        self.setGeometry(100, 100, 900, 900)
 
         self.initUI()
         self.active_uploaders = []  
@@ -47,6 +46,12 @@ class MainMenu(QMainWindow):
         Wylogowanie = menubar.addMenu("Wyloguj")
         Wylogowanie.hide() # Ukrywamy element menu "Wyloguj"
         file_menu.addAction(action_exit)
+        imports.helloworld.hello_world()
+
+        # Dodajemy akcję do elementu menu "Wyloguj"
+        action_logout = QAction("Wyloguj", self)
+        action_logout.triggered.connect(self.onLogout)
+        Wylogowanie.addAction(action_logout)
 
         # Ustawiamy tło
         self.setStyleSheet("MainMenu { background-image: url(bg.png); background-position: center; background-repeat: no-repeat; background-attachment: fixed;}")
@@ -64,8 +69,41 @@ class MainMenu(QMainWindow):
         self.label.setStyleSheet("color: white; font-size: 24px; background-color: none ") 
         self.label.setAlignment(Qt.AlignCenter)
 
-        # Tworzymy przyciski oraz style do nich
-        self.login_button = QPushButton("Zaloguj się") 
+        # Tworzymy widget i ustawiamy layout
+        central_widget = QWidget(self)
+        central_widget.setLayout(layout)
+        self.setCentralWidget(central_widget)
+
+        # Tworzymy widget dla QStackedWidget
+        self.stacked_widget = QStackedWidget()
+        self.page1 = imports.Page1()
+        self.page2 = imports.Page2()
+        self.page3 = imports.Page3()
+        self.stacked_widget.addWidget(self.page1)
+        self.stacked_widget.addWidget(self.page2)
+        self.stacked_widget.addWidget(self.page3)
+        layout.addWidget(self.stacked_widget)
+        self.stacked_widget.hide()
+
+        # Przyciski zarządzania stronami
+        self.button_page1 = QPushButton("Moje zdjęcia")
+        self.button_page1.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.page1))
+        layout.addWidget(self.button_page1)
+        self.button_page1.hide()
+
+        self.button_page2 = QPushButton("Dodaj zdjęcie")
+        self.button_page2.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.page2))
+        self.button_page2.clicked.connect(self.choose_and_send_photo)
+        layout.addWidget(self.button_page2)
+        self.button_page2.hide()
+
+        self.button_page3 = QPushButton("Opcja 3")
+        self.button_page3.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.page3))
+        layout.addWidget(self.button_page3)
+        self.button_page3.hide()
+
+        # Przyciski logowania i rejestracji
+        self.login_button = QPushButton("Zaloguj się")
         self.login_button.setStyleSheet('''
             QPushButton {
                 color: white;
@@ -78,8 +116,7 @@ class MainMenu(QMainWindow):
                 background-color: rgba(255, 255, 255, 0.2);
             }
         ''')
-
-        self.register_button = QPushButton("Zarejestruj się")  
+        self.register_button = QPushButton("Zarejestruj się")
         self.register_button.setStyleSheet('''
            QPushButton {
                 color: white;
@@ -92,17 +129,14 @@ class MainMenu(QMainWindow):
                 background-color: rgba(255, 255, 255, 0.2);
             }
         ''')
-
-        # Actions do przycisków
         self.login_button.clicked.connect(self.openLogin)
         self.register_button.clicked.connect(self.openRegister)
-
         layout.addWidget(self.label)
         layout.addWidget(self.login_button)
         layout.addWidget(self.register_button)
 
     def openLogin(self):
-        login_window = imports.SignInWindow()  # Utwórz nowe okno logowania
+        login_window = imports.SignInWindow() 
         login_window.userAuth.connect(self.onUserLogged)
         login_window.exec_()
 
@@ -111,16 +145,6 @@ class MainMenu(QMainWindow):
         register_window.exec_()
 
     def onUserLogged(self, user):
-        QMessageBox.warning(self, 'Zalogowano', 'zalogowano ' + user.getName())
-        window = imports.UserDashboard() # Jeśli użytkownik jest zalogowany, wyświetl okno nawigacji użytkownika
-        window.show()
-        self.close()
-        
-    def openRegister(self):
-        register_window = imports.SignUpWindow()
-        register_window.userAuth.connect(self.onUserLogged)  # Połącz z sygnałem userAuth z okna rejestracji
-        register_window.exec_()
-
         QMessageBox.information(self, 'Zalogowano', 'Zalogowano ' + user.getName())
         self.login_button.hide()
         self.register_button.hide()
