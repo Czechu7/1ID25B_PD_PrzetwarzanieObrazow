@@ -5,25 +5,6 @@ from PyQt5.QtCore import QThread, pyqtSignal, Qt
 import requests
 import imports
 from services.authService import getLoggedUserInfo  
-class FileUploader(QThread):
-    finished = pyqtSignal(int, str)
-
-    def __init__(self, url, file_path, token):
-        super(FileUploader, self).__init__()
-
-        self.url = url
-        self.file_path = file_path
-        self.token = token
-
-    def run(self):
-        try:
-            headers = {'Authorization': f'Bearer {self.token}'}
-            with open(self.file_path, 'rb') as file:
-                files = {'image': (self.file_path, file)}
-                response = requests.post(self.url, files=files, headers=headers)
-                self.finished.emit(response.status_code, response.text)
-        except Exception as e:
-            self.finished.emit(0, str(e))
 
 class MainMenu(QMainWindow):
     def __init__(self):
@@ -32,7 +13,7 @@ class MainMenu(QMainWindow):
         self.setGeometry(100, 100, 900, 900)
 
         self.initUI()
-        self.active_uploaders = []  
+        
 
 
     def initUI(self):
@@ -86,18 +67,17 @@ class MainMenu(QMainWindow):
         self.stacked_widget.hide()
 
         # Przyciski zarządzania stronami
-        self.button_page1 = QPushButton("Moje zdjęcia")
+        self.button_page1 = QPushButton("Strona 1")
         self.button_page1.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.page1))
         layout.addWidget(self.button_page1)
         self.button_page1.hide()
 
-        self.button_page2 = QPushButton("Dodaj zdjęcie")
+        self.button_page2 = QPushButton("Strona 2")
         self.button_page2.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.page2))
-        self.button_page2.clicked.connect(self.choose_and_send_photo)
         layout.addWidget(self.button_page2)
         self.button_page2.hide()
 
-        self.button_page3 = QPushButton("Opcja 3")
+        self.button_page3 = QPushButton("Strona 3")
         self.button_page3.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.page3))
         layout.addWidget(self.button_page3)
         self.button_page3.hide()
@@ -149,10 +129,11 @@ class MainMenu(QMainWindow):
         self.login_button.hide()
         self.register_button.hide()
         self.stacked_widget.show()
-        self.button_page1.show()
-        self.button_page2.show()
-        self.button_page3.show()
-        self.welcome_label.hide()
+        window = imports.UserDashboard()
+        window.show()
+        self.label.hide()
+        self.hide()
+
 
     def onLogout(self):
         QMessageBox.information(self, "Wylogowano", "Zostałeś pomyślnie wylogowany.")
@@ -160,29 +141,9 @@ class MainMenu(QMainWindow):
         self.login_button.show()  # Ukrycie przycisku logowania
         self.register_button.show()  # Ukrycie przycisku rejestracji
         self.stacked_widget.hide()  # Ustawienie przycisku jako niewidocznego
-        self.button_page1.hide()
-        self.button_page2.hide()
-        self.button_page3.hide()
-        self.welcome_label.show()
 
-    def choose_and_send_photo(self):
-        file_path, _ = QFileDialog.getOpenFileName(self, "Wybierz zdjęcie", "", "Pliki zdjęć (*.png *.jpg *.jpeg *.bmp)")
-        if file_path:
-            user_info = getLoggedUserInfo()
-            token = user_info['token']
-            uploader = FileUploader("http://localhost:8080/images/upload", file_path, token)
-            uploader.finished.connect(lambda: self.active_uploaders.remove(uploader)) 
-            uploader.start()
-            self.active_uploaders.append(uploader) 
+        self.label.show()
 
-        else:
-            QMessageBox.warning(self, "Anulowano", "Nie wybrano żadnego zdjęcia.")
-
-    def on_upload_finished(self, status_code, response_text):
-        if status_code == 200:
-            QMessageBox.information(self, "Sukces", "Zdjęcie zostało pomyślnie wysłane.\n" + response_text)
-        else:
-            QMessageBox.warning(self, "Błąd", f"Nie udało się wysłać zdjęcia. Status: {status_code}\n{response_text}")
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

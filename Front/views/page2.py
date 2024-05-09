@@ -1,10 +1,14 @@
 from PyQt5.QtWidgets import QWidget, QLabel, QPushButton, QVBoxLayout, QFrame, QListWidget, QListView
 from PyQt5.QtCore import Qt
+import imports 
+from . import choose_and_send_photo
+
 
 class Page2(QWidget):
     def __init__(self):
         super().__init__()
-
+        
+        self.active_uploaders = []  
         # Tworzymy ramkę
         frame = QFrame(self)
         frame.setFrameShape(QFrame.Box)  # Ustawiamy kształt ramki
@@ -19,14 +23,16 @@ class Page2(QWidget):
         self.list_widget.addItem("Item 1")
         self.list_widget.addItem("Item 2")
         self.list_widget.addItem("Item 3")
+        
 
         # Tworzymy etykietę
         self.welcome_label = QLabel("This is Page 1")
         self.welcome_label.setAlignment(Qt.AlignCenter)  # Wycentrowanie tekstu
 
         # Tworzymy przycisk do zmiany tekstu etykiety
-        self.change_text_button = QPushButton("Change Text")
-        self.change_text_button.clicked.connect(self.changeText)
+        self.change_text_button = QPushButton("Add Photo")
+        self.change_text_button.clicked.connect(choose_and_send_photo)
+        
 
         # Tworzymy układ dla strony 1
         layout = QVBoxLayout()
