@@ -1,6 +1,11 @@
 package pl.backend.images;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -62,5 +67,33 @@ public ResponseEntity<String> uploadImage(@RequestParam("image") MultipartFile f
     }
 }
 
+    @GetMapping("/{userId}")
+    public ResponseEntity<Resource> getUserImages(@PathVariable String userId) {
+        try {
+            Path userDirectory = Paths.get(TARGET_FOLDER, userId);
+            if (!Files.exists(userDirectory)) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // Assuming there's only one image per user
+            File file = userDirectory.toFile().listFiles()[0];
+            Path filePath = userDirectory.resolve(file.getName());
+            Resource resource = new UrlResource(filePath.toUri());
+
+            // Determine the content type
+            String contentType = Files.probeContentType(filePath);
+            if (contentType == null) {
+                contentType = "application/octet-stream";
+            }
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+                    .body(resource);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
 }
 

@@ -11,6 +11,7 @@ def main():
         logged_user_info = imports.authService.getLoggedUserInfo()
         print("Zalogowany użytkownik:")
         print(f"Rola: {logged_user_info['role']}")
+        print(f"id_uzytkownika: {logged_user_info['id']}")
         print(f"Nazwa użytkownika: {logged_user_info['user_name']}")
         print("Token:", logged_user_info['token'])
         print("Czas wygaśnięcia tokena:", time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(logged_user_info['expiration_time'])))
