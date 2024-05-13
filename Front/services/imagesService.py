@@ -64,3 +64,15 @@ class imagesService(QThread):
             self.finished.emit(0, str(e))  
 
 
+def get_user_images(self):
+    user_info = getLoggedUserInfo()
+    token = user_info['token']
+    user_id = user_info['id']  # assuming 'id' is a key in the user_info dictionary
+    url = f"http://localhost:8080/images/{user_id}"
+    headers = {'Authorization': f'Bearer {token}'}
+    response = requests.get(url, headers=headers)
+
+    if response.status_code == 200:
+        return response.content  # return binary content
+    else:
+        return None
