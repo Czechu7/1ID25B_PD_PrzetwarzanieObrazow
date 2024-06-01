@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QApplication
 import sys
 import time
 
+
 def main():
     print("Sprawdzanie czy użytkownik jest zalogowany.")
     isUserLogged = imports.authService.isUserLogged()
@@ -15,6 +16,10 @@ def main():
         print(f"Nazwa użytkownika: {logged_user_info['user_name']}")
         print("Token:", logged_user_info['token'])
         print("Czas wygaśnięcia tokena:", time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(logged_user_info['expiration_time'])))
+        imports.imagesService.get_all_images_for_user(logged_user_info['id'])
+        print(imports.imagesService.get_all_images_for_user(logged_user_info['id']))
+        imports.imagesService.save_all_images_locally(logged_user_info['id'])
+        print(imports.imagesService.save_all_images_locally)
     else:
         print("Brak zalogowanego użytkownika.")
 
