@@ -28,7 +28,7 @@ class FileUploader(QThread):
             self.finished.emit(0, str(e))
 
 def choose_and_send_photo():
-    file_path, _ = QFileDialog.getOpenFileName("Wybierz zdjęcie", "", "Pliki zdjęć (*.png *.jpg *.jpeg *.bmp)")
+    file_path, _ = QFileDialog.getOpenFileName(None, "Wybierz zdjęcie", "", "Pliki zdjęć (*.png *.jpg *.jpeg *.bmp)")
     if file_path:
         user_info = getLoggedUserInfo()
         token = user_info['token']
@@ -37,13 +37,13 @@ def choose_and_send_photo():
         uploader.start()
         active_uploaders.append(uploader)
     else:
-        QMessageBox.warning( "Anulowano", "Nie wybrano żadnego zdjęcia.")
+        QMessageBox.warning(None, "Anulowano", "Nie wybrano żadnego zdjęcia.")
 
 def on_upload_finished(status_code, response_text):
     if status_code == 201:  # Zmieniono na 201, ponieważ stworzenie zasobu zwraca 201
-        QMessageBox.information("Sukces", "Zdjęcie zostało pomyślnie wysłane.\n" + response_text)
+        QMessageBox.information(None, "Sukces", "Zdjęcie zostało pomyślnie wysłane.\n" + response_text)
     else:
-        QMessageBox.warning("Błąd", f"Nie udało się wysłać zdjęcia. Status: {status_code}\n{response_text}")
+        QMessageBox.warning(None, "Błąd", f"Nie udało się wysłać zdjęcia. Status: {status_code}\n{response_text}")
 
 def get_user_image(user_id, image_name):
     user_info = getLoggedUserInfo()
