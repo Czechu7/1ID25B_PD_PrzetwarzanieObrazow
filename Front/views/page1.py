@@ -65,21 +65,38 @@ class Page1(QWidget):
         # Get user ID
         user_id = self.get_user_id()
 
-        # Get path to user's images folder
         if user_id:
-            images_folder = f"images/user/{user_id}/"
-            
+            images_folder = os.path.join("images", "user", str(user_id))
+
+            # Define supported image extensions
+            supported_extensions = ['.jpeg', '.jpg', '.png']
+
             # Load images from the folder
             if os.path.exists(images_folder):
-                for image_name in os.listdir(images_folder):
-                    if image_name.endswith('.jpeg'):
+                print(f"Images folder found: {images_folder}")
+
+                # List all items in the folder for debugging
+                folder_contents = os.listdir(images_folder)
+                print(f"Contents of the folder: {folder_contents}")
+
+                for image_name in folder_contents:
+                    if any(image_name.lower().endswith(ext) for ext in supported_extensions):
                         image_path = os.path.join(images_folder, image_name)
+                        print(f"Loading image: {image_path}")
                         pixmap = QPixmap(image_path)
                         if not pixmap.isNull():
                             image_item = QListWidgetItem(QIcon(pixmap), image_name)
                             self.list_widget.addItem(image_item)
+                            print(f"Added image: {image_name}")
+                        else:
+                            print(f"Failed to load image: {image_path}")
+                    else:
+                        print(f"Skipped non-image file: {image_name}")
+            else:
+                print(f"Images folder does not exist: {images_folder}")
         else:
             print("Brak zalogowanego użytkownika.")
+
 
     def classify_selected_image(self):
         selected_items = self.list_widget.selectedItems()
@@ -94,8 +111,8 @@ class Page1(QWidget):
         user_id = self.get_user_id()
 
         if user_id:
-            images_folder = f"images/user/{user_id}/"
-            classified_folder = f"classified/user/{user_id}/"  # Path to classified images folder
+            images_folder = fr"images\user\{user_id}"
+            classified_folder = fr"classified\user\{user_id}"  # Path to classified images folder
 
             # Create classified folder if it doesn't exist
             os.makedirs(classified_folder, exist_ok=True)
