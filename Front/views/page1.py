@@ -64,7 +64,7 @@ class Page1(QWidget):
 
         # Get user ID
         user_id = self.get_user_id()
-
+        imports.imagesService.save_all_images_locally(user_id)
         if user_id:
             images_folder = os.path.join("images", "user", str(user_id))
 
