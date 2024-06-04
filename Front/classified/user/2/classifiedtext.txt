@@ -1,0 +1,4 @@
+Image Name: bg.png
+person: 77.44%
+keyboard: 56.04%
+book: 54.52%

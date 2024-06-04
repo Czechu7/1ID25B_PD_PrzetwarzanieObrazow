@@ -24,6 +24,9 @@ class Page1(QWidget):
         self.list_widget.setIconSize(QSize(200, 200))  # Set icon size to 200x200 pixels
         self.list_widget.setFlow(QListWidget.LeftToRight)
 
+        # # Connect double-click event for showing clasificated window
+        # self.list_widget.itemDoubleClicked.connect(self.open_classification_window)
+
         # Create layout for page 1
         layout = QVBoxLayout()
 
@@ -37,6 +40,11 @@ class Page1(QWidget):
         self.load_images_button = QPushButton("Moje zdjęcia", self)
         self.load_images_button.clicked.connect(self.load_images)
         buttons_layout.addWidget(self.load_images_button)  # Add load images button to buttons layout
+
+        # cREATE BUTTON MOJE KLASYFIKACJE
+        self.load_clasyfication_button = QPushButton("Moje klasyfikacje", self)
+        self.load_clasyfication_button.clicked.connect(self.load_clasyfication_images)
+        buttons_layout.addWidget(self.load_clasyfication_button)  # Add MY clasyfication button to buttons layout
 
         # Create classification button
         self.classification_button = QPushButton("Klasyfikacja", self)
@@ -57,6 +65,45 @@ class Page1(QWidget):
         # Load model for classification
         self.detector = hub.load("https://tfhub.dev/tensorflow/efficientdet/d2/1")
         self.labels_map = self.load_label_map()
+
+    def load_clasyfication_images(self):
+         # Clear current items in the list widget
+        self.list_widget.clear()
+
+        # Get user ID
+        user_id = self.get_user_id()
+        imports.imagesService.save_all_images_locally(user_id)
+        if user_id:
+            images_folder = os.path.join("classified", "user", str(user_id))
+
+            # Define supported image extensions
+            supported_extensions = ['.jpeg', '.jpg', '.png']
+
+            # Load images from the folder
+            if os.path.exists(images_folder):
+                print(f"Images folder found: {images_folder}")
+
+                # List all items in the folder for debugging
+                folder_contents = os.listdir(images_folder)
+                print(f"Contents of the folder: {folder_contents}")
+
+                for image_name in folder_contents:
+                    if any(image_name.lower().endswith(ext) for ext in supported_extensions):
+                        image_path = os.path.join(images_folder, image_name)
+                        print(f"Loading image: {image_path}")
+                        pixmap = QPixmap(image_path)
+                        if not pixmap.isNull():
+                            image_item = QListWidgetItem(QIcon(pixmap), image_name)
+                            self.list_widget.addItem(image_item)
+                            print(f"Added image: {image_name}")
+                        else:
+                            print(f"Failed to load image: {image_path}")
+                    else:
+                        print(f"Skipped non-image file: {image_name}")
+            else:
+                print(f"Images folder does not exist: {images_folder}")
+        else:
+            print("Brak zalogowanego użytkownika.")
 
     def load_images(self):
         # Clear current items in the list widget
@@ -97,6 +144,30 @@ class Page1(QWidget):
         else:
             print("Brak zalogowanego użytkownika.")
 
+# def open_classification_window(self):
+#     selected_items = self.list_widget.selectedItems()
+#     if not selected_items:
+#         QMessageBox.warning(self, "No Selection", "Please select an image to classify.")
+#         return
+
+#     user_id = self.get_user_id()
+#     if not user_id:
+#         print("Brak zalogowanego użytkownika.")
+#         return
+
+#     images_folder = os.path.join("classified", "user", str(user_id))
+#     image_path = os.path.join(images_folder, 'zdjęcie.jpg')
+#     description_path = os.path.join(images_folder, 'opis_zdjecia.txt')
+#     comment_path = os.path.join(images_folder, 'komentarz.txt')
+
+#     if os.path.exists(image_path) and os.path.exists(description_path) and os.path.exists(comment_path):
+#         dialog = ClassificationDetailsDialog(image_path, description_path, comment_path, self)
+#         dialog.exec_()
+#     else:
+#         QMessageBox.warning(self, "Missing Files", "One or more required files are missing.")
+
+
+        
 
     def classify_selected_image(self):
         selected_items = self.list_widget.selectedItems()
@@ -247,6 +318,54 @@ class Page1(QWidget):
             QMessageBox.information(self, "Success", "Classification data saved successfully.")
         else:
             print("Brak zalogowanego użytkownika.")
+
+# class ClassificationDetailsDialog(QDialog):
+#     def __init__(self, image_path, description_path, comment_path, parent=None):
+#         super().__init__(parent)
+#         self.setWindowTitle("Classification Details")
+#         self.setFixedSize(1100, 800)  # Set fixed size for the dialog
+
+#         self.layout = QHBoxLayout()
+
+#         self.image_label = QLabel(self)
+#         self.layout.addWidget(self.image_label)
+
+#         right_layout = QVBoxLayout()
+
+#         description_label = QLabel("Opis zdjęcia:", self)
+#         right_layout.addWidget(description_label)
+
+#         self.description_text = QTextEdit(self)
+#         self.description_text.setReadOnly(True)
+#         right_layout.addWidget(self.description_text)
+
+#         comment_label = QLabel("Komentarz:", self)
+#         right_layout.addWidget(comment_label)
+
+#         self.comment_text = QTextEdit(self)
+#         self.comment_text.setReadOnly(True)
+#         right_layout.addWidget(self.comment_text)
+
+#         self.layout.addLayout(right_layout)
+#         self.setLayout(self.layout)
+
+#         # Load image and text files
+#         self.load_image(image_path)
+#         self.load_text(description_path, self.description_text)
+#         self.load_text(comment_path, self.comment_text)
+
+#     def load_image(self, image_path):
+#         pixmap = QPixmap(image_path)
+#         if not pixmap.isNull():
+#             self.image_label.setPixmap(pixmap.scaled(700, 700, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+
+#     def load_text(self, file_path, text_widget):
+#         if os.path.exists(file_path):
+#             with open(file_path, 'r') as file:
+#                 text = file.read()
+#                 text_widget.setPlainText(text)
+#         else:
+#             text_widget.setPlainText("File not found: " + file_path)
 
 class ClassificationDialog(QDialog):
     def __init__(self, image_name, image_path, detection_data, classified_folder, parent=None):
