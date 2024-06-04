@@ -76,12 +76,12 @@ class UserDashboard(QMainWindow):
         layout.addWidget(self.stacked_widget)
 
         # Tworzymy przyciski dla stron po zalogowaniu
-        self.button_page1 = QPushButton("Strona 1")
+        self.button_page1 = QPushButton("Zdjecia")
         self.button_page1.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.page1))
         layout.addWidget(self.button_page1)
 
-        self.button_page2 = QPushButton("Strona 2")
-        self.button_page2.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.page2))
+        self.button_page2 = QPushButton("Dodaj zdjecie")
+        self.button_page2.clicked.connect(imports.imagesService.choose_and_send_photo)
         layout.addWidget(self.button_page2)
 
         self.button_page3 = QPushButton("Strona 3")
