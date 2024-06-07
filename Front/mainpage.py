@@ -67,17 +67,17 @@ class MainMenu(QMainWindow):
         self.stacked_widget.hide()
 
         # Przyciski zarządzania stronami
-        self.button_page1 = QPushButton("Strona 1")
+        self.button_page1 = QPushButton("Zdjecia")
         self.button_page1.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.page1))
         layout.addWidget(self.button_page1)
         self.button_page1.hide()
 
-        self.button_page2 = QPushButton("Strona 2")
-        self.button_page2.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.page2))
+        self.button_page2 = QPushButton("Dodaj zdjecie")
+        self.button_page2.clicked.connect(imports.imagesService.choose_and_send_photo)
         layout.addWidget(self.button_page2)
         self.button_page2.hide()
 
-        self.button_page3 = QPushButton("Strona 3")
+        self.button_page3 = QPushButton("Wspolna annotacja")
         self.button_page3.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.page3))
         layout.addWidget(self.button_page3)
         self.button_page3.hide()

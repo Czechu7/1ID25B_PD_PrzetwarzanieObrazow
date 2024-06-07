@@ -1,0 +1,13 @@
+Image Name: krzak.jpg
+person: 74.80%
+car: 70.56%
+person: 69.37%
+person: 68.18%
+car: 65.88%
+person: 61.92%
+traffic light: 57.84%
+person: 55.97%
+person: 53.16%
+person: 52.95%
+traffic light: 50.88%
+car: 50.40%

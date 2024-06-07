@@ -33,3 +33,6 @@ coverage.xml
 # Inne tymczasowe pliki
 *.swp
 *.swo
+
+/images/user/*
+/classified/user/*
