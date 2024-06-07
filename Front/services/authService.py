@@ -75,7 +75,6 @@ def getLoggedUserInfo():
             'user_name': tokenDecrypted.get('sub'),
             'iat': tokenDecrypted.get('iat'),
             'token': token,
-            'id': tokenDecrypted.get('id'),
             'expiration_time': tokenDecrypted.get('exp')
         }
         return user_info

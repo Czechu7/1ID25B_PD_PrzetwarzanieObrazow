@@ -25,7 +25,11 @@ public class ImagesControllerTest {
 
     private String targetFolder = "targetFolder";
 
-
+    @BeforeEach
+    public void setup() {
+        imagesController = new ImagesController(jwtUtil);
+        imagesController.setTargetFolder(targetFolder);
+    }
 
     @Test
     public void uploadImageReturnsBadRequestWhenFileIsEmpty() throws Exception {
