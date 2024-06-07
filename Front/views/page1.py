@@ -38,6 +38,11 @@ class Page1(QWidget):
         self.load_images_button.clicked.connect(self.load_images)
         buttons_layout.addWidget(self.load_images_button)  # Add load images button to buttons layout
 
+        # Create classified images button
+        self.classified_images_button = QPushButton("Moje klasyfikacje", self)
+        self.classified_images_button.clicked.connect(self.load_classified_images)
+        buttons_layout.addWidget(self.classified_images_button)  # Add classified images button to buttons layout
+
         # Create classification button
         self.classification_button = QPushButton("Klasyfikacja", self)
         self.classification_button.clicked.connect(self.classify_selected_image)  # Connect button to classify_selected_image method
@@ -58,45 +63,68 @@ class Page1(QWidget):
         self.detector = hub.load("https://tfhub.dev/tensorflow/efficientdet/d2/1")
         self.labels_map = self.load_label_map()
 
+        # Double click event for list widget
+        self.list_widget.itemDoubleClicked.connect(self.show_classification_dialog)
+
     def load_images(self):
         # Clear current items in the list widget
         self.list_widget.clear()
 
         # Get user ID
         user_id = self.get_user_id()
-        imports.imagesService.save_all_images_locally(user_id)
+
+        # Get path to user's images folder
         if user_id:
-            images_folder = os.path.join("images", "user", str(user_id))
-
-            # Define supported image extensions
-            supported_extensions = ['.jpeg', '.jpg', '.png']
-
+            images_folder = f"images/user/{user_id}/"
+            
             # Load images from the folder
             if os.path.exists(images_folder):
-                print(f"Images folder found: {images_folder}")
-
-                # List all items in the folder for debugging
-                folder_contents = os.listdir(images_folder)
-                print(f"Contents of the folder: {folder_contents}")
-
-                for image_name in folder_contents:
-                    if any(image_name.lower().endswith(ext) for ext in supported_extensions):
+                for image_name in os.listdir(images_folder):
+                    if image_name.endswith('.jpeg'):
                         image_path = os.path.join(images_folder, image_name)
-                        print(f"Loading image: {image_path}")
                         pixmap = QPixmap(image_path)
                         if not pixmap.isNull():
                             image_item = QListWidgetItem(QIcon(pixmap), image_name)
                             self.list_widget.addItem(image_item)
-                            print(f"Added image: {image_name}")
-                        else:
-                            print(f"Failed to load image: {image_path}")
-                    else:
-                        print(f"Skipped non-image file: {image_name}")
-            else:
-                print(f"Images folder does not exist: {images_folder}")
         else:
             print("Brak zalogowanego użytkownika.")
 
+    def show_classification_dialog(self, item):
+        image_name = item.text()
+        user_id = self.get_user_id()
+        if user_id:
+            images_folder = f"images/user/{user_id}/"
+            image_path = os.path.join(images_folder, image_name)
+            classified_folder = f"classified/user/{user_id}/"  # Path to classified images folder
+            dialog = ClassificationDialog(image_name, image_path, [], classified_folder, self.get_user_id)
+            dialog.load_classification_files()  # No argument needed here
+            dialog.exec_()
+        else:
+            print("Brak zalogowanego użytkownika.")
+
+
+    def load_classified_images(self):
+        # Clear current items in the list widget
+        self.list_widget.clear()
+
+        # Get user ID
+        user_id = self.get_user_id()
+
+        # Get path to user's classified images folder
+        if user_id:
+            classified_folder = f"classified/user/{user_id}/"
+            
+            # Load images from the folder
+            if os.path.exists(classified_folder):
+                for image_name in os.listdir(classified_folder):
+                    if image_name.endswith('.jpeg'):
+                        image_path = os.path.join(classified_folder, image_name)
+                        pixmap = QPixmap(image_path)
+                        if not pixmap.isNull():
+                            image_item = QListWidgetItem(QIcon(pixmap), image_name)
+                            self.list_widget.addItem(image_item)
+        else:
+            print("Brak zalogowanego użytkownika.")
 
     def classify_selected_image(self):
         selected_items = self.list_widget.selectedItems()
@@ -111,8 +139,8 @@ class Page1(QWidget):
         user_id = self.get_user_id()
 
         if user_id:
-            images_folder = fr"images\user\{user_id}"
-            classified_folder = fr"classified\user\{user_id}"  # Path to classified images folder
+            images_folder = f"images/user/{user_id}/"
+            classified_folder = f"classified/user/{user_id}/"  # Path to classified images folder
 
             # Create classified folder if it doesn't exist
             os.makedirs(classified_folder, exist_ok=True)
@@ -122,7 +150,7 @@ class Page1(QWidget):
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
             classified_image, detection_data = self.perform_classification(img)
             if classified_image is not None:
-                classified_image_path = os.path.join(classified_folder, "classifiedimage.jpeg")
+                classified_image_path = os.path.join(classified_folder, f"{image_name}_classifiedimage.jpeg")
                 cv2.imwrite(classified_image_path, classified_image)
                 
                 self.show_classification_results(image_name, classified_image_path, detection_data, classified_folder)
@@ -235,8 +263,8 @@ class Page1(QWidget):
     def save_classification_data(self, classified_folder, classification_text, user_text):
         user_id = self.get_user_id()
         if user_id:
-            classified_text_path = os.path.join(classified_folder, "classifiedtext.txt")
-            user_text_path = os.path.join(classified_folder, "usertext.txt")
+            classified_text_path = os.path.join(classified_folder, f"{image_name}_classifiedtext.txt")
+            user_text_path = os.path.join(classified_folder, f"{image_name}_usertext.txt")
 
             with open(classified_text_path, 'w') as txt_file:
                 txt_file.write(classification_text)
@@ -249,14 +277,14 @@ class Page1(QWidget):
             print("Brak zalogowanego użytkownika.")
 
 class ClassificationDialog(QDialog):
-    def __init__(self, image_name, image_path, detection_data, classified_folder, parent=None):
+    def __init__(self, image_name, image_path, detection_data, classified_folder, get_user_id, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Classification Results")
-        self.setFixedSize(1100, 800)  # Set fixed size for the dialog
+        self.setFixedSize(1100, 800)
 
+        self.image_name = image_name
         self.image_path = image_path
         self.classified_folder = classified_folder
-        self.image_name = image_name
 
         self.layout = QHBoxLayout()
 
@@ -284,25 +312,52 @@ class ClassificationDialog(QDialog):
         right_layout.addWidget(self.notes_field)
 
         save_button = QPushButton("Save", self)
-        save_button.clicked.connect(self.save_data)
+        save_button.clicked.connect(lambda: self.save_data(classified_folder))
         right_layout.addWidget(save_button)
 
         self.layout.addLayout(right_layout)
         self.setLayout(self.layout)
-
-        # Load image and set maximum size
         self.load_image()
+        self.edit_mode_enabled = False
+        self.get_user_id = get_user_id
 
     def load_image(self):
         pixmap = QPixmap(self.image_path)
         if not pixmap.isNull():
             self.image_label.setPixmap(pixmap.scaled(700, 700, Qt.KeepAspectRatio, Qt.SmoothTransformation))
 
-    def save_data(self):
+    def load_classification_files(self):
+        user_id = self.get_user_id()  # Call get_user_id method
+        if user_id:
+            classified_folder = f"classified/user/{user_id}/"
+
+            # Load usertext.txt
+            user_text_path = os.path.join(classified_folder, f"{self.image_name}_usertext.txt")
+            if os.path.exists(user_text_path):
+                with open(user_text_path, 'r') as user_text_file:
+                    user_text = user_text_file.read()
+                self.notes_field.setPlainText(user_text)
+
+            # Load classifiedtext.txt
+            classified_text_path = os.path.join(self.classified_folder, f"{self.image_name}_classifiedtext.txt")
+            if os.path.exists(classified_text_path):
+                with open(classified_text_path, 'r') as classified_text_file:
+                    classified_text = classified_text_file.read()
+                classification_text = f"Image Name: {self.image_name}\n{classified_text}"
+                self.json_text.setPlainText(classification_text)
+
+            # Load classifiedimage.jpeg
+            classified_image_path = os.path.join(classified_folder, f"{self.image_name}_classifiedimage.jpeg")
+            if os.path.exists(classified_image_path):
+                pixmap = QPixmap(classified_image_path)
+                if not pixmap.isNull():
+                    self.image_label.setPixmap(pixmap.scaled(700, 700, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+
+    def save_data(self, classified_folder):
         classification_text = self.json_text.toPlainText()
         user_text = self.notes_field.toPlainText()
-        classified_text_path = os.path.join(self.classified_folder, "classifiedtext.txt")
-        user_text_path = os.path.join(self.classified_folder, "usertext.txt")
+        classified_text_path = os.path.join(classified_folder, f"{self.image_name}_classifiedtext.txt")
+        user_text_path = os.path.join(classified_folder, f"{self.image_name}_usertext.txt")
 
         with open(classified_text_path, 'w') as txt_file:
             txt_file.write(classification_text)
