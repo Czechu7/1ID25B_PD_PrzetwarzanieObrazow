@@ -9,10 +9,10 @@ def main():
     
     if isUserLogged:
         logged_user_info = imports.authService.getLoggedUserInfo()
-        user_id = logged_user_info['id']  # Extracting user ID
+        user_id = logged_user_info['id']
         print("Zalogowany użytkownik:")
         print(f"Rola: {logged_user_info['role']}")
-        print(f"id_uzytkownika: {user_id}")  # Printing user ID
+        print(f"id_uzytkownika: {user_id}")
         print(f"Nazwa użytkownika: {logged_user_info['user_name']}")
         print("Token:", logged_user_info['token'])
         print("Czas wygaśnięcia tokena:", time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(logged_user_info['expiration_time'])))
