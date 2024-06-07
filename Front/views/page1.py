@@ -205,7 +205,7 @@ class Page1(QWidget):
         class_indices = detector_output["detection_classes"].numpy()[0].astype(int)
         scores = detector_output["detection_scores"].numpy()[0]
 
-        threshold = 0.5  # Threshold value
+        threshold = 0.5  # Threshold value.
 
         for i in range(len(boxes)):
             score = scores[i]
@@ -366,4 +366,3 @@ class ClassificationDialog(QDialog):
             txt_file.write(user_text)
 
         QMessageBox.information(self, "Success", "Classification data saved successfully.")
-
