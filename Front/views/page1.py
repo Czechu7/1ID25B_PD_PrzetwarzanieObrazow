@@ -73,7 +73,7 @@ class Page1(QWidget):
         self.setLayout(main_layout)
 
         # Load model for classification
-        self.detector = hub.load("https://tfhub.dev/tensorflow/efficientdet/d2/1")
+        self.detector = hub.load("https://www.kaggle.com/models/tensorflow/efficientdet/TensorFlow2/d0/1")
         self.labels_map = self.load_label_map()
 
         # Double click event for list widget
@@ -85,7 +85,7 @@ class Page1(QWidget):
 
         # Get user ID
         user_id = self.get_user_id()
-
+        imports.imagesService.save_all_images_locally(user_id)
         # Get path to user's images folder
         if user_id:
             images_folder = os.path.join("images", "user", str(user_id))
@@ -93,7 +93,7 @@ class Page1(QWidget):
             # Load images from the folder
             if os.path.exists(images_folder):
                 for image_name in os.listdir(images_folder):
-                    if image_name.endswith('.jpeg'):
+                    if image_name.lower().endswith(('.jpeg', '.jpg', '.png', '.bmp')):
                         image_path = os.path.join(images_folder, image_name)
                         pixmap = QPixmap(image_path)
                         if not pixmap.isNull():
@@ -130,7 +130,7 @@ class Page1(QWidget):
             # Load images from the folder
             if os.path.exists(classified_folder):
                 for image_name in os.listdir(classified_folder):
-                    if image_name.endswith('.jpeg'):
+                    if image_name.lower().endswith(('.jpeg', '.jpg', '.png', '.bmp')):
                         image_path = os.path.join(classified_folder, image_name)
                         pixmap = QPixmap(image_path)
                         if not pixmap.isNull():
@@ -289,6 +289,7 @@ class Page1(QWidget):
 
     def save_classification_data(self, classified_folder, classification_text, user_text):
         user_id = self.get_user_id()
+        
         if user_id:
             classified_text_path = os.path.join(classified_folder, f"{image_name}_classifiedtext.txt")
             user_text_path = os.path.join(classified_folder, f"{image_name}_usertext.txt")
@@ -324,7 +325,7 @@ class ClassificationDialog(QDialog):
         right_layout.addWidget(json_data_label)
 
         self.json_text = QTextEdit(self)
-        classification_text = f"Image Name: {image_name}\n"
+        classification_text = f""
         for detection in detection_data:
             classification_text += f"{detection['class']}: {detection['score']:.2f}%\n"
         self.json_text.setPlainText(classification_text)
@@ -370,7 +371,7 @@ class ClassificationDialog(QDialog):
             if os.path.exists(classified_text_path):
                 with open(classified_text_path, 'r') as classified_text_file:
                     classified_text = classified_text_file.read()
-                classification_text = f"Image Name: {self.image_name}\n{classified_text}"
+                classification_text = f"{classified_text}"
                 self.json_text.setPlainText(classification_text)
 
             # Load classifiedimage.jpeg
