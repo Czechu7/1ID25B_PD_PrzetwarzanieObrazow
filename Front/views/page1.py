@@ -356,7 +356,7 @@ class ClassificationDialog(QDialog):
     def load_classification_files(self):
         user_id = self.get_user_id()  # Call get_user_id method
         if user_id:
-            classified_folder = f"classified/user/{user_id}/"
+            classified_folder = os.path.join("classified", "user", str(user_id))
 
             # Load usertext.txt
             user_text_path = os.path.join(classified_folder, f"{self.image_name}_usertext.txt")
