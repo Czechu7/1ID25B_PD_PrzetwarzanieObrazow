@@ -1,7 +1,7 @@
 import os
 import json
 import imports
-from PyQt5.QtWidgets import QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QFrame, QListWidget, QListWidgetItem, QFileDialog, QMessageBox, QDialog, QLineEdit, QTextEdit
+from PyQt5.QtWidgets import QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QFrame, QListWidget, QListWidgetItem, QFileDialog, QMessageBox, QDialog, QLineEdit, QTextEdit, QApplication, QProgressBar
 from PyQt5.QtGui import QIcon, QPixmap, QResizeEvent
 from PyQt5.QtCore import Qt, QSize
 import cv2
@@ -51,6 +51,19 @@ class Page1(QWidget):
         # Add buttons layout to the main layout
         layout.addLayout(buttons_layout)
 
+        # Create progress bar
+        self.progress_bar = QProgressBar(self)
+        self.progress_bar.setRange(0, 100)
+        self.progress_bar.setValue(0)
+
+        # Create progress label
+        self.progress_label = QLabel("", self)
+        self.progress_label.setAlignment(Qt.AlignCenter)  # Center align text
+
+        # Add progress bar and progress label to the main layout
+        layout.addWidget(self.progress_bar)
+        layout.addWidget(self.progress_label)
+
         # Set layout to frame
         frame.setLayout(layout)
 
@@ -75,7 +88,7 @@ class Page1(QWidget):
 
         # Get path to user's images folder
         if user_id:
-            images_folder = f"images/user/{user_id}/"
+            images_folder = os.path.join("images", "user", str(user_id))
             
             # Load images from the folder
             if os.path.exists(images_folder):
@@ -93,9 +106,9 @@ class Page1(QWidget):
         image_name = item.text()
         user_id = self.get_user_id()
         if user_id:
-            images_folder = f"images/user/{user_id}/"
+            images_folder = os.path.join("images", "user", str(user_id))
             image_path = os.path.join(images_folder, image_name)
-            classified_folder = f"classified/user/{user_id}/"  # Path to classified images folder
+            classified_folder = os.path.join("classified", "user", str(user_id))  # Path to classified images folder
             dialog = ClassificationDialog(image_name, image_path, [], classified_folder, self.get_user_id)
             dialog.load_classification_files()  # No argument needed here
             dialog.exec_()
@@ -112,7 +125,7 @@ class Page1(QWidget):
 
         # Get path to user's classified images folder
         if user_id:
-            classified_folder = f"classified/user/{user_id}/"
+            classified_folder = os.path.join("classified", "user", str(user_id))
             
             # Load images from the folder
             if os.path.exists(classified_folder):
@@ -139,8 +152,8 @@ class Page1(QWidget):
         user_id = self.get_user_id()
 
         if user_id:
-            images_folder = f"images/user/{user_id}/"
-            classified_folder = f"classified/user/{user_id}/"  # Path to classified images folder
+            images_folder = os.path.join("images", "user", str(user_id))
+            classified_folder = os.path.join("classified", "user", str(user_id))
 
             # Create classified folder if it doesn't exist
             os.makedirs(classified_folder, exist_ok=True)
@@ -148,12 +161,21 @@ class Page1(QWidget):
             image_path = os.path.join(images_folder, image_name)
             img = cv2.imread(image_path)
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            self.progress_label.setText("Classification in progress...")
+            self.progress_bar.setValue(0)
+            QApplication.processEvents()
+            
             classified_image, detection_data = self.perform_classification(img)
+            
             if classified_image is not None:
                 classified_image_path = os.path.join(classified_folder, f"{image_name}_classifiedimage.jpeg")
                 cv2.imwrite(classified_image_path, classified_image)
-                
+                self.progress_label.setText("Classification completed")
+                self.progress_bar.setValue(100)
                 self.show_classification_results(image_name, classified_image_path, detection_data, classified_folder)
+            else:
+                self.progress_label.setText("Classification failed")
+                self.progress_bar.setValue(0)
         else:
             print("Brak zalogowanego użytkownika.")
 
@@ -166,6 +188,11 @@ class Page1(QWidget):
 
             image_with_boxes = self.draw_boxes(img, detector_output)
             detection_data = self.extract_detection_data(detector_output)
+            
+            # Simulate progress update
+            self.progress_bar.setValue(50)
+            QApplication.processEvents()
+            
             return cv2.cvtColor(image_with_boxes, cv2.COLOR_RGB2BGR), detection_data  # Convert back to BGR before returning
 
         except Exception as e:
@@ -329,7 +356,7 @@ class ClassificationDialog(QDialog):
     def load_classification_files(self):
         user_id = self.get_user_id()  # Call get_user_id method
         if user_id:
-            classified_folder = f"classified/user/{user_id}/"
+            classified_folder = os.path.join("classified", "user", str(user_id))
 
             # Load usertext.txt
             user_text_path = os.path.join(classified_folder, f"{self.image_name}_usertext.txt")
