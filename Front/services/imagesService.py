@@ -67,7 +67,6 @@ def get_all_images_for_user(user_id):
     if response.status_code == 200:
         return response.json()  # Zwróć listę nazw obrazów
     else:
-        QMessageBox.warning(None,"Błąd" f"Nie udało się pobrać listy zdjęć. Status: {response.status_code}\n{response.text}")
         return None
     
 def save_all_images_locally(user_id):
