@@ -15,3 +15,5 @@ from views.userDashboard import UserDashboard
 from main import main
 from services.imagesService import choose_and_send_photo
 from services import imagesService
+from services.classifiedImagesService import sendClassifiedPhoto
+from services import classifiedImagesService
