@@ -114,6 +114,11 @@ class MainMenu(QMainWindow):
         layout.addWidget(self.label)
         layout.addWidget(self.login_button)
         layout.addWidget(self.register_button)
+    
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        menubar_height = self.menuBar().height() if self.menuBar().isVisible() else 0
+        self.overlay.setGeometry(0, menubar_height, self.width(), self.height() - menubar_height)
 
     def openLogin(self):
         login_window = imports.SignInWindow() 

@@ -13,6 +13,10 @@ class Page1(QWidget):
     def __init__(self):
         super().__init__()
 
+        self.setStyleSheet("""
+                background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 #2b5876, stop:1 #4e4376);
+        """)
+
         # Create frame
         frame = QFrame(self)
         frame.setFrameShape(QFrame.Box)
@@ -30,23 +34,34 @@ class Page1(QWidget):
         # Add list widget to the main layout
         layout.addWidget(self.list_widget)
 
+        self.list_widget.setStyleSheet("""
+            QListWidget::Item {
+                color: white; 
+            }
+        """)
+
         # Create buttons layout
         buttons_layout = QHBoxLayout()
 
-        # Create load images button
+        # Create load images button with gradient
         self.load_images_button = QPushButton("Moje zdjęcia", self)
         self.load_images_button.clicked.connect(self.load_images)
         buttons_layout.addWidget(self.load_images_button)  # Add load images button to buttons layout
 
-        # Create classified images button
+        # Create classified images button with gradient
         self.classified_images_button = QPushButton("Moje klasyfikacje", self)
         self.classified_images_button.clicked.connect(self.load_classified_images)
         buttons_layout.addWidget(self.classified_images_button)  # Add classified images button to buttons layout
 
-        # Create classification button
+        # Create classification button with gradient
         self.classification_button = QPushButton("Klasyfikacja", self)
         self.classification_button.clicked.connect(self.classify_selected_image)  # Connect button to classify_selected_image method
         buttons_layout.addWidget(self.classification_button)  # Add classification button to buttons layout
+
+        self.load_images_button.setStyleSheet(generate_button_style("#8f94fb",  "#8f94fb", "#4e54c8"))
+        self.classified_images_button.setStyleSheet(generate_button_style("#8f94fb",  "#8f94fb", "#4e54c8"))
+        self.classification_button.setStyleSheet(generate_button_style("#8f94fb",  "#8f94fb", "#4e54c8"))    
+
 
         # Add buttons layout to the main layout
         layout.addLayout(buttons_layout)
@@ -66,6 +81,8 @@ class Page1(QWidget):
 
         # Set layout to frame
         frame.setLayout(layout)
+
+        
 
         # Create main layout for page 1
         main_layout = QVBoxLayout()
@@ -310,6 +327,11 @@ class ClassificationDialog(QDialog):
         self.setWindowTitle("Classification Results")
         self.setFixedSize(1100, 800)
 
+        self.setStyleSheet("""ClassificationDialog {
+                background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 #2b5876, stop:1 #4e4376);
+            }
+        """)
+
         self.image_name = image_name
         self.image_path = image_path
         self.classified_folder = classified_folder
@@ -322,6 +344,7 @@ class ClassificationDialog(QDialog):
         right_layout = QVBoxLayout()
 
         json_data_label = QLabel("Classification Data:", self)
+        json_data_label.setStyleSheet("font-size: 14px; color: #fff;")
         right_layout.addWidget(json_data_label)
 
         self.json_text = QTextEdit(self)
@@ -330,9 +353,11 @@ class ClassificationDialog(QDialog):
             classification_text += f"{detection['class']}: {detection['score']:.2f}%\n"
         self.json_text.setPlainText(classification_text)
         self.json_text.setReadOnly(True)
+        self.json_text.setStyleSheet("color: green")
         right_layout.addWidget(self.json_text)
 
         notes_label = QLabel("User Text:", self)
+        notes_label.setStyleSheet("font-size: 14px; color: #fff;")
         right_layout.addWidget(notes_label)
 
         self.notes_field = QTextEdit(self)
@@ -340,6 +365,7 @@ class ClassificationDialog(QDialog):
         right_layout.addWidget(self.notes_field)
 
         save_button = QPushButton("Save", self)
+        save_button.setStyleSheet("background: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #8f94fb, stop:1 #8f94fb, stop:0.5 #4e54c8); color: #fff;")
         save_button.clicked.connect(lambda: self.save_data(classified_folder))
         right_layout.addWidget(save_button)
 
@@ -394,3 +420,27 @@ class ClassificationDialog(QDialog):
             txt_file.write(user_text)
 
         QMessageBox.information(self, "Success", "Classification data saved successfully.")
+
+def generate_button_style(start_color, middle_color, end_color, hover_intensity=0.2):
+    hover_end_color = "#{:02X}{:02X}{:02X}".format(
+        int(end_color[1:3], 16) + int((255 - int(end_color[1:3], 16)) * hover_intensity),
+        int(end_color[3:5], 16) + int((255 - int(end_color[3:5], 16)) * hover_intensity),
+        int(end_color[5:], 16) + int((255 - int(end_color[5:], 16)) * hover_intensity)
+    )
+
+    button_style = """
+        QPushButton {
+            font-size: 16px;
+            font-family: monospace;
+            color: #fff;
+            background: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 %s, stop:1 %s, stop:0.5 %s);
+            text-decoration: none;
+            padding: 15px 50px;
+            border-radius: 10px;
+        }
+        QPushButton:hover {
+            background: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 %s, stop:1 %s, stop:0.5 %s);
+        }
+    """ % (start_color, middle_color, end_color, start_color, middle_color, hover_end_color)
+
+    return button_style
