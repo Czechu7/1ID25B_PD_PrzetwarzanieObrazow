@@ -8,6 +8,7 @@ import cv2
 import numpy as np
 import tensorflow as tf
 import tensorflow_hub as hub
+from services.websocket_stomp_client import WebSocketStompClient
 
 class Page1(QWidget):
     def __init__(self):
@@ -329,6 +330,8 @@ class ClassificationDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Classification Results")
         self.setFixedSize(1100, 800)
+        self.websocket_client = WebSocketStompClient("ws://localhost:8080/photo-socket", "123")
+        self.websocket_client.connect()
 
         self.setStyleSheet("""ClassificationDialog {
                 background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 #2b5876, stop:1 #4e4376);
@@ -415,11 +418,10 @@ class ClassificationDialog(QDialog):
     def save_data(self, classified_folder):
         classification_text = self.json_text.toPlainText()
         user_text = self.notes_field.toPlainText()
-        
+
         base_name, ext = os.path.splitext(self.image_name)
 
         imports.classifiedImagesService.sendClassifiedPhoto(self.image_name, classification_text, user_text)
-
         classified_text_path = os.path.join(classified_folder, f"{base_name}_classifiedtext.txt")
         user_text_path = os.path.join(classified_folder, f"{base_name}_usertext.txt")
 
@@ -428,6 +430,17 @@ class ClassificationDialog(QDialog):
 
         with open(user_text_path, 'w') as txt_file:
             txt_file.write(user_text)
+
+        # Connect to WebSocket and STOMP
+        # self.websocket_client.connect()
+
+        # Send annotation message to WebSocket
+        annotation_message = {
+            "photoId": base_name,
+            "userId": "current_user",  # Replace with actual user ID
+            "content": classification_text
+        }
+        # self.websocket_client.send_message(annotation_message)
 
         QMessageBox.information(self, "Success", "Classification data saved successfully.")
 
