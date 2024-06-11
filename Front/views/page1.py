@@ -418,6 +418,8 @@ class ClassificationDialog(QDialog):
         
         base_name, ext = os.path.splitext(self.image_name)
 
+        imports.classifiedImagesService.sendClassifiedPhoto(self.image_name, classification_text, user_text)
+
         classified_text_path = os.path.join(classified_folder, f"{base_name}_classifiedtext.txt")
         user_text_path = os.path.join(classified_folder, f"{base_name}_usertext.txt")
 

@@ -11,53 +11,6 @@ UPLOAD_URL = "http://localhost:8080/classifiedImages/upload"
 
 
 activeUploaders = []
-def sendPhoto(self, fileName):
-                
-        # Pobranie listy wszystkich plików i katalogów w podanym folderze
-        folder_path = os.path.join("classified", "user", str(6))
-        # all_files = os.listdir(folder_path)
-
-        # # Filtrowanie tylko plików
-        # only_files = [f for f in all_files if os.path.isfile(os.path.join(folder_path, f))]
-
-        # # Wyświetlenie listy plików
-        # print("Pliki w folderze:")
-        # for file in only_files:
-        #     print(file)
-
-        print(folder_path)
-
-        userInfo = getLoggedUserInfo()
-        token = userInfo['token']
-        userId = userInfo['id']
-        filePath = os.path.join("classified", "user", str(userId))
-        photoPath = os.path.join(filePath, fileName)
-        classifiedText = None
-        userText = None
-        with open(filePath + '/classifiedtext.txt', 'r') as file:
-            classifiedText = file.read()
-        with open(filePath + '/usertext.txt', 'r') as file:
-            userText = file.read()
-        print(filePath)
-        print(photoPath)
-        print(classifiedText)
-        print(userText)
-        if filePath:
-            uploader = FileUploader(UPLOAD_URL, photoPath, classifiedText, userText, token)
-            uploader.finished.connect(lambda: activeUploaders.remove(uploader)) 
-            uploader.start()
-            activeUploaders.append(uploader) 
-
-        else:
-            QMessageBox.warning(self, "Canceled", "This photo not exist!.")
-
-
-# def onUploadFinished(self, status_code, response_text):
-#         if status_code == 200:
-#             QMessageBox.information(self, "Success", "The photo has been successfully sent.\n" + response_text)
-#         else:
-#             QMessageBox.warning(self, "Error", f"Failed to send the photo. Status: {status_code}\n{response_text}")
-
 
 class FileUploader(QThread):
     finished = pyqtSignal(int, str)
@@ -66,15 +19,46 @@ class FileUploader(QThread):
         super(FileUploader, self).__init__()
 
         self.url = url
-        self.file_path = file_path
+        self.file_path = os.path.join(os.getcwd(), file_path)
+        self.classifiedText = classifiedText
+        self.userText = userText
         self.token = token
 
     def run(self):
         try:
             headers = {'Authorization': f'Bearer {self.token}'}
+            data = {
+                'classifiedText': self.classifiedText, 'userText': self.userText
+                }
+            print(self.file_path)
             with open(self.file_path, 'rb') as file:
                 files = {'image': (self.file_path, file)}
-                response = requests.post(self.url, files=files, headers=headers)
+                response = requests.post(self.url, files=files, data=data, headers=headers)
+                print('Photo sent successfully!')
                 self.finished.emit(response.status_code, response.text)
         except Exception as e:
             self.finished.emit(0, str(e))
+
+
+def sendClassifiedPhoto(fileName, classifiedText, userText):
+        userInfo = getLoggedUserInfo()
+        token = userInfo['token']
+        userId = userInfo['id']
+        photoPath = os.path.join("classified", "user", str(userId), fileName)
+        
+        # DEBUG SECTION-------
+        # print(token)
+        # print(photoPath)
+        # print(classifiedText)
+        # print(userText)
+        # --------------------
+
+        if photoPath:
+            uploader = FileUploader(UPLOAD_URL, photoPath, classifiedText, userText, token)
+            uploader.finished.connect(lambda: activeUploaders.remove(uploader)) 
+            uploader.start()
+            activeUploaders.append(uploader) 
+
+        else:
+            QMessageBox.warning(self, "Canceled", "This photo not exist!.")
+

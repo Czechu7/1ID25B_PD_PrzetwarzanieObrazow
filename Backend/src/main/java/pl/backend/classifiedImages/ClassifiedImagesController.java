@@ -29,6 +29,12 @@ public class ClassifiedImagesController {
 
     @PostMapping("/upload")
     public ResponseEntity<String> uploadImage(@RequestParam("image") MultipartFile file, @RequestParam("classifiedText") String classifiedText, @RequestParam("userText") String userText, @RequestHeader("Authorization") String token) {
+//      DEBUG SECTION--------------
+        System.out.println("File: " + file);
+        System.out.println("Classified text: " + classifiedText);
+        System.out.println("User txt: " + userText);
+        System.out.println("Token: " + token);
+//      ---------------------------
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body("Brak zdjęcia.");
         }
