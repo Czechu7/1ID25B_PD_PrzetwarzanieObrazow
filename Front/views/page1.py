@@ -185,11 +185,14 @@ class Page1(QWidget):
             classified_image, detection_data = self.perform_classification(img)
             
             if classified_image is not None:
-                classified_image_path = os.path.join(classified_folder, f"{image_name}_classifiedimage.jpeg")
+                base_name, ext = os.path.splitext(image_name)
+                if not base_name.endswith("_classifiedimage"):
+                    base_name += "_classifiedimage"
+                classified_image_path = os.path.join(classified_folder, f"{base_name}{ext}")
                 cv2.imwrite(classified_image_path, classified_image)
                 self.progress_label.setText("Classification completed")
                 self.progress_bar.setValue(100)
-                self.show_classification_results(image_name, classified_image_path, detection_data, classified_folder)
+                self.show_classification_results(base_name, classified_image_path, detection_data, classified_folder)
             else:
                 self.progress_label.setText("Classification failed")
                 self.progress_bar.setValue(0)
@@ -385,15 +388,17 @@ class ClassificationDialog(QDialog):
         if user_id:
             classified_folder = os.path.join("classified", "user", str(user_id))
 
+            base_name, ext = os.path.splitext(self.image_name)
+
             # Load usertext.txt
-            user_text_path = os.path.join(classified_folder, f"{self.image_name}_usertext.txt")
+            user_text_path = os.path.join(classified_folder, f"{base_name}_usertext.txt")
             if os.path.exists(user_text_path):
                 with open(user_text_path, 'r') as user_text_file:
                     user_text = user_text_file.read()
                 self.notes_field.setPlainText(user_text)
 
             # Load classifiedtext.txt
-            classified_text_path = os.path.join(self.classified_folder, f"{self.image_name}_classifiedtext.txt")
+            classified_text_path = os.path.join(classified_folder, f"{base_name}_classifiedtext.txt")
             if os.path.exists(classified_text_path):
                 with open(classified_text_path, 'r') as classified_text_file:
                     classified_text = classified_text_file.read()
@@ -401,7 +406,7 @@ class ClassificationDialog(QDialog):
                 self.json_text.setPlainText(classification_text)
 
             # Load classifiedimage.jpeg
-            classified_image_path = os.path.join(classified_folder, f"{self.image_name}_classifiedimage.jpeg")
+            classified_image_path = os.path.join(classified_folder, f"{base_name}_classifiedimage.jpeg")
             if os.path.exists(classified_image_path):
                 pixmap = QPixmap(classified_image_path)
                 if not pixmap.isNull():
@@ -410,8 +415,11 @@ class ClassificationDialog(QDialog):
     def save_data(self, classified_folder):
         classification_text = self.json_text.toPlainText()
         user_text = self.notes_field.toPlainText()
-        classified_text_path = os.path.join(classified_folder, f"{self.image_name}_classifiedtext.txt")
-        user_text_path = os.path.join(classified_folder, f"{self.image_name}_usertext.txt")
+        
+        base_name, ext = os.path.splitext(self.image_name)
+
+        classified_text_path = os.path.join(classified_folder, f"{base_name}_classifiedtext.txt")
+        user_text_path = os.path.join(classified_folder, f"{base_name}_usertext.txt")
 
         with open(classified_text_path, 'w') as txt_file:
             txt_file.write(classification_text)
