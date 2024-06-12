@@ -186,8 +186,6 @@ class Page1(QWidget):
             
             if classified_image is not None:
                 base_name, ext = os.path.splitext(image_name)
-                if not base_name.endswith("_classifiedimage"):
-                    base_name += "_classifiedimage"
                 classified_image_path = os.path.join(classified_folder, f"{base_name}{ext}")
                 cv2.imwrite(classified_image_path, classified_image)
                 self.progress_label.setText("Classification completed")
@@ -304,15 +302,16 @@ class Page1(QWidget):
         return labels_map
 
     def show_classification_results(self, image_name, image_path, detection_data, classified_folder):
-        dialog = ClassificationDialog(image_name, image_path, detection_data, classified_folder, self)
+        dialog = ClassificationDialog(image_name, image_path, detection_data, classified_folder, self.get_user_id)
         dialog.exec_()
 
-    def save_classification_data(self, classified_folder, classification_text, user_text):
+    def save_classification_data(self, classified_folder, classification_text, user_text, image_name):
         user_id = self.get_user_id()
         
         if user_id:
-            classified_text_path = os.path.join(classified_folder, f"{image_name}_classifiedtext.txt")
-            user_text_path = os.path.join(classified_folder, f"{image_name}_usertext.txt")
+            base_name, ext = os.path.splitext(image_name)
+            classified_text_path = os.path.join(classified_folder, f"{base_name}_classifiedtext.txt")
+            user_text_path = os.path.join(classified_folder, f"{base_name}_usertext.txt")
 
             with open(classified_text_path, 'w') as txt_file:
                 txt_file.write(classification_text)
@@ -342,6 +341,7 @@ class ClassificationDialog(QDialog):
         self.layout = QHBoxLayout()
 
         self.image_label = QLabel(self)
+        self.image_label.setFixedSize(700, 700)  # Set a fixed size for the image label
         self.layout.addWidget(self.image_label)
 
         right_layout = QVBoxLayout()
@@ -381,7 +381,7 @@ class ClassificationDialog(QDialog):
     def load_image(self):
         pixmap = QPixmap(self.image_path)
         if not pixmap.isNull():
-            self.image_label.setPixmap(pixmap.scaled(700, 700, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            self.image_label.setPixmap(pixmap.scaled(self.image_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
 
     def load_classification_files(self):
         user_id = self.get_user_id()  # Call get_user_id method
@@ -406,11 +406,11 @@ class ClassificationDialog(QDialog):
                 self.json_text.setPlainText(classification_text)
 
             # Load classifiedimage.jpeg
-            classified_image_path = os.path.join(classified_folder, f"{base_name}_classifiedimage.jpeg")
+            classified_image_path = os.path.join(classified_folder, f"{base_name}.jpeg")
             if os.path.exists(classified_image_path):
                 pixmap = QPixmap(classified_image_path)
                 if not pixmap.isNull():
-                    self.image_label.setPixmap(pixmap.scaled(700, 700, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+                    self.image_label.setPixmap(pixmap.scaled(self.image_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
 
     def save_data(self, classified_folder):
         classification_text = self.json_text.toPlainText()
