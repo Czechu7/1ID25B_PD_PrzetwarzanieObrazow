@@ -5,6 +5,8 @@ from PyQt5.QtCore import QThread, pyqtSignal, Qt
 import requests
 from services.authService import getLoggedUserInfo
 import os
+import uuid;
+import shutil
 
 active_uploaders = []
 
@@ -30,20 +32,37 @@ class FileUploader(QThread):
 def choose_and_send_photo():
     file_path, _ = QFileDialog.getOpenFileName(None, "Wybierz zdjęcie", "", "Pliki zdjęć (*.png *.jpg *.jpeg *.bmp)")
     if file_path:
+        random_uuid = uuid.uuid4() # Generate random UUID
+
+        # Prepare new file name
+        base_name = os.path.basename(file_path)
+        name, ext = os.path.splitext(base_name)
+        new_name = f"{str(random_uuid)}{ext}";
+        temp_dir = os.path.join(os.getcwd(), 'temp')
+        temp_file = os.path.join(temp_dir, new_name)
+
+        # Create temp directory if not exists
+        if(os.path.exists(temp_dir) == False):
+            os.mkdir(temp_dir)
+
+        # Copy file to temp directory with new name
+        shutil.copy(file_path, temp_file)
+
         user_info = getLoggedUserInfo()
         token = user_info['token']
-        uploader = FileUploader("http://localhost:8080/images/upload", file_path, token)
-        uploader.finished.connect(lambda status_code, response_text: on_upload_finished( status_code, response_text))
+        uploader = FileUploader("http://localhost:8080/images/upload", temp_file, token)
+        uploader.finished.connect(lambda status_code, response_text: on_upload_finished( status_code, response_text, temp_file))
         uploader.start()
         active_uploaders.append(uploader)
     else:
         QMessageBox.warning(None, "Anulowano", "Nie wybrano żadnego zdjęcia.")
 
-def on_upload_finished(status_code, response_text):
+def on_upload_finished(status_code, response_text, temp_file):
     if status_code == 201:  # Zmieniono na 201, ponieważ stworzenie zasobu zwraca 201
         QMessageBox.information(None, "Sukces", "Zdjęcie zostało pomyślnie wysłane.\n" + response_text)
     else:
         QMessageBox.warning(None, "Błąd", f"Nie udało się wysłać zdjęcia. Status: {status_code}\n{response_text}")
+    os.remove(temp_file) # Delete temp file
 
 def get_user_image(user_id, image_name):
     user_info = getLoggedUserInfo()
