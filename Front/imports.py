@@ -17,3 +17,5 @@ from services.imagesService import choose_and_send_photo
 from services import imagesService
 from services.classifiedImagesService import sendClassifiedPhoto
 from services import classifiedImagesService
+from services.statisticsService import getStatistics
+from services import statisticsService
