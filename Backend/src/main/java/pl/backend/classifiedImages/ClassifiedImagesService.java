@@ -8,7 +8,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class ClassifiedImagesService {
@@ -40,5 +44,26 @@ public class ClassifiedImagesService {
     @Transactional
     public ClassifiedImagesUser saveImage(ClassifiedImagesUser classifiedImagesUser) {
         return classifiedImagesRepository.save(classifiedImagesUser);
+    }
+
+    public Map<String, Double> getClassifiedTextStatistics() {
+        List<ClassifiedImagesUser> allImages = classifiedImagesRepository.findAll();
+
+        if (allImages.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        Map<String, Long> classifiedTextCount = allImages.stream()
+                .collect(Collectors.groupingBy(ClassifiedImagesUser::getClassifiedText, Collectors.counting()));
+
+        long totalTexts = allImages.size();
+
+        Map<String, Double> classifiedTextPercentage = new HashMap<>();
+        for (Map.Entry<String, Long> entry : classifiedTextCount.entrySet()) {
+            double percentage = 100.0 * entry.getValue() / totalTexts;
+            classifiedTextPercentage.put(entry.getKey(), percentage);
+        }
+
+        return classifiedTextPercentage;
     }
 }
