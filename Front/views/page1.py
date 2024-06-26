@@ -8,6 +8,7 @@ import cv2
 import numpy as np
 import tensorflow as tf
 import tensorflow_hub as hub
+from pythonp2p import Node
 
 class Page1(QWidget):
     def __init__(self):
@@ -322,7 +323,13 @@ class Page1(QWidget):
             QMessageBox.information(self, "Success", "Classification data saved successfully.")
         else:
             print("Brak zalogowanego użytkownika.")
+class Mynode(Node):
+     #p2p
+     def handle_message(self, message, sender):
+        print(f"Otrzymano wiadomość od {sender}: {message}")
 
+     def on_message(self, data, sender, private):
+        self.handle_message(data, sender)  
 class ClassificationDialog(QDialog):
     def __init__(self, image_name, image_path, detection_data, classified_folder, get_user_id, parent=None):
         super().__init__(parent)
@@ -343,7 +350,7 @@ class ClassificationDialog(QDialog):
         self.image_label = QLabel(self)
         self.image_label.setFixedSize(700, 700)  # Set a fixed size for the image label
         self.layout.addWidget(self.image_label)
-
+        self.setMessageReceiver() #p2p
         right_layout = QVBoxLayout()
 
         json_data_label = QLabel("Classification Data:", self)
@@ -377,7 +384,10 @@ class ClassificationDialog(QDialog):
         self.load_image()
         self.edit_mode_enabled = False
         self.get_user_id = get_user_id
-
+    def setMessageReceiver(self):
+        self.node = Mynode("", 65432, 65433)
+        self.node.start()
+        print("Węzeł P2P uruchomiony i nasłuchuje na porcie 65432.")
     def load_image(self):
         pixmap = QPixmap(self.image_path)
         if not pixmap.isNull():
@@ -411,11 +421,16 @@ class ClassificationDialog(QDialog):
                 pixmap = QPixmap(classified_image_path)
                 if not pixmap.isNull():
                     self.image_label.setPixmap(pixmap.scaled(self.image_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
-
+    def setUpMessageSender(self, userText):
+        #p2p
+        node = Node("", 65432, 65433)
+        node.connect_to("127.0.0.1")
+        node.start()
+        node.send_message(userText)
     def save_data(self, classified_folder):
         classification_text = self.json_text.toPlainText()
         user_text = self.notes_field.toPlainText()
-        
+        self.setUpMessageSender(user_text) #p2p
         base_name, ext = os.path.splitext(self.image_name)
 
         imports.classifiedImagesService.sendClassifiedPhoto(self.image_name, classification_text, user_text)
