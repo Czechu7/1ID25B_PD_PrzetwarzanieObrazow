@@ -85,6 +85,11 @@ class UserDashboard(QMainWindow):
         self.button_page3.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.page3))
         self.button_page3.setStyleSheet("background: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #8f94fb, stop:1 #8f94fb, stop:0.5 #4e54c8); color: #FFFFFA; font-family: monospace; font-size: 14px; text-decoration: none;")
         layout.addWidget(self.button_page3)
+
+        self.button_page4 = QPushButton("Dodaj zdjecie uzytkownika")
+        self.button_page4.clicked.connect(self.openAddPhotoById)
+        self.button_page4.setStyleSheet("background: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #8f94fb, stop:1 #8f94fb, stop:0.5 #4e54c8); color: #FFFFFA; font-family: monospace; font-size: 14px; text-decoration: none;")
+        layout.addWidget(self.button_page4)
         
     def onLogout(self):
         QMessageBox.information(self, "Wylogowano", "Zostałeś pomyślnie wylogowany.")
@@ -94,3 +99,7 @@ class UserDashboard(QMainWindow):
         # Uruchomienie pliku main.py
         import subprocess
         subprocess.Popen(["python", "main.py"])
+
+    def openAddPhotoById(self):
+        login_window = imports.AddPhotoByIdWindow() 
+        login_window.exec_()
