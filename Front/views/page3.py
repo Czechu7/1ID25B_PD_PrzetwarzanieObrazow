@@ -33,11 +33,13 @@ class Page3(QWidget):
         self.main_layout.addWidget(self.scrollArea)
         self.setLayout(self.main_layout)
 
-        self.statistics_loaded = False  # Flaga informująca, czy statystyki zostały już załadowane
-
     def load_statistics(self):
-        if self.statistics_loaded:
-            return  # Jeśli statystyki zostały już załadowane, nie rób nic
+        # Czyszczenie obecnych elementów w układzie przed załadowaniem nowych
+        while self.scrollLayout.count():
+            item = self.scrollLayout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()
 
         self.user_id = self.get_user_id()
         statistics = imports.get_statistics(self.user_id)
@@ -69,8 +71,6 @@ class Page3(QWidget):
         plot_pie.axis('equal')  # Równy aspekt ratio zapewnia, że wykres kołowy będzie kołem.
         self.add_figure(fig_pie)
 
-        self.statistics_loaded = True  # Ustawienie flagi na True po załadowaniu statystyk
-
     def add_figure(self, fig):
         canvas = FigureCanvas(fig)
         self.scrollLayout.addWidget(canvas)  # Dodajemy canvas do scrollLayout zamiast do frame
@@ -84,6 +84,5 @@ class Page3(QWidget):
             return None
 
     def showEvent(self, event):
-        if not self.statistics_loaded:  # Ładuj statystyki tylko raz
-            self.load_statistics()
+        self.load_statistics()
         super().showEvent(event)
