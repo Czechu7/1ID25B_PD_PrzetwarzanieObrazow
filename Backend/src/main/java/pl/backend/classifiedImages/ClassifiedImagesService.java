@@ -8,10 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -46,24 +43,65 @@ public class ClassifiedImagesService {
         return classifiedImagesRepository.save(classifiedImagesUser);
     }
 
-    public Map<String, Double> getClassifiedTextStatistics() {
-        List<ClassifiedImagesUser> allImages = classifiedImagesRepository.findAll();
+    // W pliku ClassifiedImagesService.java
+    @Transactional
+    public List<Map<String, Object>> getUserClassifiedTexts(String userId) {
+        List<ClassifiedImagesUser> userImages = classifiedImagesRepository.findByUserId(userId);
 
-        if (allImages.isEmpty()) {
-            return Collections.emptyMap();
+        List<Map<String, Object>> classifications = userImages.stream()
+                .map(ClassifiedImagesUser::getClassifiedText)
+                .map(text -> text.split("\n"))
+                .flatMap(Arrays::stream)
+                .map(line -> {
+                    String[] parts = line.split(": ");
+                    String classification = parts[0];
+                    double percentage = Double.parseDouble(parts[1].replace("%", ""));
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("classification", classification);
+                    map.put("percentage", percentage);
+                    return map;
+                })
+                .collect(Collectors.toList());
+
+        return classifications;
+    }
+
+    @Transactional
+    public Map<String, Double> getUserClassificationStats(String userId) {
+        // Pobierz wszystkie obrazy dla użytkownika
+        List<ClassifiedImagesUser> userImages = classifiedImagesRepository.findByUserId(userId);
+
+        // Pobierz tekst klasyfikacji dla każdego obrazu
+        List<Map<String, Object>> classifications = getUserClassifiedTexts(userId);
+
+        // Oblicz sumę wszystkich procentów
+        double totalPercentage = classifications.stream()
+                .mapToDouble(c -> (Double) c.get("percentage"))
+                .sum();
+
+        // Zlicz wystąpienia każdej klasyfikacji i oblicz jej procent jako procent sumy wszystkich procentów
+        Map<String, Double> classificationCounts = classifications.stream()
+                .collect(Collectors.toMap(
+                        c -> c.get("classification").toString(),
+                        c -> ((Double) c.get("percentage")) / totalPercentage * 100,
+                        Double::sum));
+
+        // Zaokrąglij procenty do najbliższej liczby całkowitej i oblicz ich sumę
+        Map<String, Long> roundedCounts = classificationCounts.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> Math.round(e.getValue())));
+
+        long sum = roundedCounts.values().stream().mapToLong(Long::longValue).sum();
+
+        // Jeżeli suma zaokrąglonych procentów jest różna od 100, skoryguj największy procent
+        if (sum != 100) {
+            String maxKey = Collections.max(roundedCounts.entrySet(), Map.Entry.comparingByValue()).getKey();
+            roundedCounts.put(maxKey, roundedCounts.get(maxKey) + 100 - sum);
         }
 
-        Map<String, Long> classifiedTextCount = allImages.stream()
-                .collect(Collectors.groupingBy(ClassifiedImagesUser::getClassifiedText, Collectors.counting()));
-
-        long totalTexts = allImages.size();
-
-        Map<String, Double> classifiedTextPercentage = new HashMap<>();
-        for (Map.Entry<String, Long> entry : classifiedTextCount.entrySet()) {
-            double percentage = 100.0 * entry.getValue() / totalTexts;
-            classifiedTextPercentage.put(entry.getKey(), percentage);
-        }
-
-        return classifiedTextPercentage;
+        // Zwróć zaokrąglone procenty
+        return roundedCounts.entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().doubleValue()));
     }
 }

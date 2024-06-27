@@ -92,10 +92,34 @@ public class ClassifiedImagesController {
         }
         return classifiedImagesService.getImageData(userId, imageName);
     }
+    @GetMapping("/user/{userId}/statistics")
+    public ResponseEntity<?> getUserClassificationStats(@PathVariable String userId, @RequestHeader("Authorization") String token) {
+        token = token.replace("Bearer ", "");
+        String authUserId = this.authenticationService.getId(token);
+        if (authUserId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token.");
+        }
+        if (!authUserId.equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Nieautoryzowany dostęp.");
+        }
 
-    @GetMapping("/statistics")
-    public ResponseEntity<Map<String, Double>> getClassifiedTextStatistics() {
-        Map<String, Double> statistics = classifiedImagesService.getClassifiedTextStatistics();
-        return ResponseEntity.ok(statistics);
+        Map<String, Double> stats = classifiedImagesService.getUserClassificationStats(userId);
+        return ResponseEntity.ok(stats);
+    }
+
+    // W pliku ClassifiedImagesController.java
+    @GetMapping("/user/{userId}/classifiedTexts")
+    public ResponseEntity<?> getUserClassifiedTexts(@PathVariable String userId, @RequestHeader("Authorization") String token) {
+        token = token.replace("Bearer ", "");
+        String authUserId = this.authenticationService.getId(token);
+        if (authUserId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token.");
+        }
+        if (!authUserId.equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Nieautoryzowany dostęp.");
+        }
+
+        List<Map<String, Object>> classifiedTexts = classifiedImagesService.getUserClassifiedTexts(userId);
+        return ResponseEntity.ok(classifiedTexts);
     }
 }
