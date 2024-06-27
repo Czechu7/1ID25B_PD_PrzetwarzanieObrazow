@@ -11,13 +11,15 @@ def getStatistics():
     print('Pobieranie statystyk..')
     token = loadFileToken()
     
-    headers = {'Authorization': 'Bearer ' + token}
-    res = requests.get(API_URL, headers=headers)
-    if(res.status_code == 200): # 200 Successful
-        return res.json()
+    if(token):    
+        headers = {'Authorization': 'Bearer ' + token}
+        res = requests.get(API_URL, headers=headers)
+        if(res.status_code == 200): # 200 Successful
+            return res.json()
+        else:
+            raise Exception('Błąd pobrania statystyk!')
     else:
-        raise Exception('Błąd pobrania statystyk!')
-    
+        return {}
 
 # WCZYTANIE TOKENU Z PLIKU
 def loadFileToken():
