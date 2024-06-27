@@ -6,3 +6,6 @@ numpy
 tensorflow
 tensorflow_hub
 opencv-python
+pythonp2p
+pycryptodome
+matplotlib
