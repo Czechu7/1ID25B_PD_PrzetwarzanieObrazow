@@ -51,5 +51,4 @@ class SignInWindow(QDialog):
                             f.write(image_content)
         except Exception as e:
             print('Wystąpił błąd: ' + str(e))
-            QMessageBox.warning(self, "Błąd", "Wystąpił błąd podczas logowania.")
 
