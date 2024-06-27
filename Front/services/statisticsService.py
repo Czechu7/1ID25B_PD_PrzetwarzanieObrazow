@@ -1,7 +1,5 @@
 import requests
-import os
-import time
-import requests
+from services.authService import getLoggedUserInfo
 
 API_URL = 'http://127.0.0.1:8080/classifiedImages/statistics'
 TOKEN_FILE = 'token.txt'
@@ -9,24 +7,21 @@ TOKEN_FILE = 'token.txt'
 # POBRANIE STATYSTYK
 def getStatistics():
     print('Pobieranie statystyk..')
-    token = loadFileToken()
+    userInfo = getLoggedUserInfo()
+    token = userInfo['token']
     
     if(token):    
         headers = {'Authorization': 'Bearer ' + token}
         res = requests.get(API_URL, headers=headers)
-        if(res.status_code == 200): # 200 Successful
-            return res.json()
+        if(res.status_code == 200):
+            if(res.json() == []):
+                print('Brak statystyk')
+                return {}
+            else:
+                print(res.json())
+                return res.json()
         else:
             raise Exception('Błąd pobrania statystyk!')
     else:
         return {}
-
-# WCZYTANIE TOKENU Z PLIKU
-def loadFileToken():
-    tokenPath = os.path.join(os.getcwd(), TOKEN_FILE)
-    if os.path.exists(tokenPath):
-        with open(tokenPath, 'r') as plik:
-            token = plik.read().strip()
-        return token
-    else:
-        return None
+    
