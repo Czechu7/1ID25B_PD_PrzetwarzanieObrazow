@@ -81,7 +81,7 @@ class UserDashboard(QMainWindow):
         self.button_page2.setStyleSheet("background: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #8f94fb, stop:1 #8f94fb, stop:0.5 #4e54c8); color: #FFFFFA; font-family: monospace; font-size: 14px; text-decoration: none;")
         layout.addWidget(self.button_page2)
 
-        self.button_page3 = QPushButton("Strona 3")
+        self.button_page3 = QPushButton("Statystyki")
         self.button_page3.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.page3))
         self.button_page3.setStyleSheet("background: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #8f94fb, stop:1 #8f94fb, stop:0.5 #4e54c8); color: #FFFFFA; font-family: monospace; font-size: 14px; text-decoration: none;")
         layout.addWidget(self.button_page3)
